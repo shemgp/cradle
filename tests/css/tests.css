@@ -1,0 +1,70 @@
+/*
+ *==============================================================================
+ *  Title      : Style for tests page
+ *  Author     : Digger (c) SAD-Systems <http://sad-systems.ru>
+ *  Created on : 06.10.2015
+ *==============================================================================
+ */
+html {
+    margin:      0px;
+    padding:     0px;
+    font-family: Tahoma, Arial, sans-serif;
+    font-size:   14px;
+}
+
+body {
+    margin:           0px;
+    padding:          0px;    
+    background-color: #eee;
+    background-image: url("bg.png");
+}
+
+h1 {
+    margin:           0;
+    padding:          15px 20px;
+    border:           0px;
+    white-space:      nowrap;
+    background-color: #a00; /*5373b4;30bb00;*/
+    background-image: url("bg.png");
+    border-bottom:    solid 1px #777777;
+    border-collapse:  collapse;
+    color:            #ffffff;
+    font-size:        150%;
+    text-shadow:      2px 2px 3px #000000;    
+    text-align:       center;
+}
+
+h1 > img {
+    float:         left; 
+    padding-right: 10px; 
+    width:         40px;
+}
+        /*--- main items ---*/
+        /*--- titles ---*/
+        .testcases .testsuite > span { 
+            cursor: pointer;
+            font-weight: bold;
+        }
+        /*--- comments ---*/
+        .testcases .testsuite > em {
+                 color: #888888;
+             font-size: 0.9em;
+            font-style: italic;
+        }
+
+        /*--- test name ---*/
+        .testcases .testname {
+            cursor: pointer;
+            font-weight: bold;
+        }
+        /*--- description: ---*/
+        .testcases .description {
+                  color: #555555;
+              font-size: 0.9em;
+                padding: 2px 10px 10px 10px;
+            border-left: 1px solid #000000;
+        }
+        /*--- statuses: ---*/
+        .testcases .status-ok         { color: #00aa00; text-decoration: line-through; }
+        .testcases .status-fail       { color: #aa0000; }
+        .testcases .status-error      { color: #cc6600; }

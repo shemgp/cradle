@@ -1,0 +1,89 @@
+/*
+ *==============================================================================
+ *  Title      : Style for demo page
+ *  Author     : Digger (c) SAD-Systems <http://sad-systems.ru>
+ *  Created on : 03.05.2015
+ *==============================================================================
+ */
+html {
+    margin:      0px;
+    padding:     0px;
+    font-family: Tahoma, Arial, sans-serif;
+    font-size:   18px;
+}
+
+body {
+    margin:           0px;
+    padding:          0px;    
+    background-color: #eee;
+    background-image: url("../img/bg.png");
+}
+
+h1 {
+    margin:           0;
+    padding:          15px 20px;
+    border:           0px;
+    white-space:      nowrap;
+    background-color: #30bb00; /*5373b4;*/
+    background-image: url("../img/bg.png");
+    border-bottom:    solid 1px #777777;
+    border-collapse:  collapse;
+    color:            #ffffff;
+    font-size:        150%;
+    text-shadow:      2px 2px 3px #000000;    
+    text-align:       center;
+}
+
+h1 > img {
+    float:         left; 
+    padding-right: 10px; 
+    width:         40px;
+}
+
+.demo-nav {
+    float: left;
+    width: auto;
+    background-image: url("../img/bgw50p.png");
+    padding: 10px;
+    margin: 2px;
+    border: 1px solid #bbb;
+    box-shadow: 2px 2px 5px rgba(0,0,0, 0.5);
+    font-size: 14px;
+}
+.demo-nav ul {
+    list-style: none;
+    padding: 0 10px;
+    margin: 0;
+}
+.demo-nav li {
+    padding: 3px 10px;
+}
+.demo-nav > ul {
+    padding: 0 0;
+    margin: 0;
+}
+.demo-nav .active {
+    background-color: #30bb00;
+}
+
+.demo-nav .active a {
+    color: #fff;
+}
+
+.demo-page {
+    float: left;
+    margin: 0;
+    padding: 20px;
+    font-size: 14px;
+    width: auto;
+}
+
+a, a:visited {
+    color:#5373b4;
+}
+a:hover {
+    color:#4b86fe;
+}
+
+fielset {
+}

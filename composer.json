@@ -1,0 +1,29 @@
+{
+    "name": "digger/cradle",
+    "description": "Simple PHP library for creating Web-based applications",
+    "keywords": [ "digger", "cradle" ],
+    "homepage": "http://sad-systems.ru/",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+             "name": "Mr Digger",
+            "email": "mrdigger@mail.ru",
+         "homepage": "http://sad-systems.ru/",
+             "role": "Founder and project lead"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "*"
+    },
+    "config": {
+        "vendor-dir" : "vendor",  
+           "bin-dir" : "vendor/bin"
+    },
+    "autoload" : {
+        "psr-4": { "digger\\cradle\\": "src/" }
+    }           
+}
