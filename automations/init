@@ -1,0 +1,19 @@
+#!/usr/local/bin/php
+<?php
+/*==============================================================================
+ *  Title      : Create application configuraion files (from templates)
+ *  Author     : Digger (c) SAD-Systems <http://sad-systems.ru>
+ *  Created on : 03.10.2015
+ *==============================================================================
+ * Console script
+ * to run from command line
+ * ----------------------------------------------------------------------------- 
+ */
+
+//--- Get config data:
+
+$config = require 'common.php';
+
+//--- Create application configuraion files from templates:
+
+\digger\cradle\application\Creater::createApplication($config);
