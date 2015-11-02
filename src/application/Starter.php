@@ -198,6 +198,7 @@ class Starter {
      */
     public static function setTextDomain($domain, $rootDir, $codeset='UTF-8') {
         // Set root directory to find translations:
+        bindtextdomain ($domain, $rootDir . "/nocache"); //<-- Gettext cache workaround (for develop mode only)
         bindtextdomain ($domain, $rootDir);
         // Set codeset:
         bind_textdomain_codeset($domain, $codeset ? $codeset : 'UTF-8');
