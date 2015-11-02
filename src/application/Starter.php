@@ -26,12 +26,16 @@ class Starter {
     /** Sub title separator */
     public static $subTitleSeparator = ' | ';
 
+    /** Array of text domains for translations */
+    public static $textDomains = null;
+
     /** Flag =true if autoloader is included */
     private static $autoloader = false;
     
     /** Relative reverse path to web root */
     private static $uriRootBack = null;
 
+    
     /**
      * Returns a file name of currently registred autoloader
      * 
@@ -178,6 +182,82 @@ class Starter {
     }
     
     /**
+     * To set params of current text domain for translations
+     * 
+     * @param string $domain    The name of the text domain
+     * @param string $rootDir   Root directory to find translations
+     * @code
+     * ~~~
+     * folder structure:
+     *   /$rootDir
+     *         en/LC_MESSAGES/domainName.mo
+     *         ru/LC_MESSAGES/domainName.mo
+     * ~~~
+     * @endcode
+     * @param string $codeset UTF-8 by default.
+     */
+    public static function setTextDomain($domain, $rootDir, $codeset='UTF-8') {
+        // Set root directory to find translations:
+        bindtextdomain ($domain, $rootDir);
+        // Set codeset:
+        bind_textdomain_codeset($domain, $codeset ? $codeset : 'UTF-8');
+        // Use text domain:
+        textdomain ($domain);        
+    }
+    
+    /**
+     * Change current text domain for translation.
+     * 
+     * Property `self::$textDomains` mast be defined before:
+     * 
+     * @code
+     * ~~~
+     * self::$textDomains = [
+     *   'text_domain1' => [
+     *       'root'    => '/path/to/some_folder1',
+     *       'codeset' => 'UTF-8',
+     *   ],
+     *   'text_domain2' => [
+     *       'root'    => '/path/to/some_folder2',
+     *       'codeset' => 'UTF-8',
+     *   ],
+     *   ...
+     * ]
+     * ~~~
+     * @endcode
+     * 
+     * @param string $domain The name of the current text domain
+     * 
+     */
+    public static function useTextDomain($domain) {
+        if (isset(self::$textDomains[$domain])) {
+            extract(self::$textDomains[$domain]);
+            self::setTextDomain($domain, $root, $codeset);
+        }
+    }
+
+        /**
+     * Set application current language
+     * 
+     * @param  string $lang Value of HTML tag "lang" (en|ru|en-US|ru-RU|...)
+     * @return string 
+     */
+    public static function setLanguage($lang) { 
+        if (strlen($lang) < 3) {
+            // Two letters lang (en|ru|...):
+            $lang    = strtolower($lang);
+            $country = ($lang == 'en') ? 'US' : strtoupper($lang);
+            $lang   .= '_' . $country;
+        } else {
+            //--- Language pair (en-US|ru-RU):
+            $lang = str_replace('-', '_', $lang);
+        }
+         //putenv("LANG=" . $lang);
+    return setlocale(LC_ALL, $lang); //<-- "ru_RU"
+    }
+
+
+    /**
      * Start web application
      * 
      * Very simple application router.
@@ -225,6 +305,17 @@ class Starter {
             $action     = $m[2];
         } else {
             $controller = trim($route, "\/");
+        }
+        
+        //--- Set application language:
+        if ($config['language']) { 
+            self::setLanguage($config['language']);
+        }
+        //--- Set current text domain:
+        self::$textDomains = $config['textDomains'];
+        if (is_array(self::$textDomains)) {
+            //--- use the first text domain by default:
+            self::useTextDomain(array_shift(array_keys(self::$textDomains)));
         }
         //-----------------------
         
