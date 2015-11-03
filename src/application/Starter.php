@@ -26,6 +26,7 @@ class Starter {
     /** Sub title separator */
     public static $subTitleSeparator = ' | ';
     
+    /** Cookie language key (to determine user's selection) */
     public static $cookieLanguageKey = 'language';
 
     /** Array of text domains for translations */
