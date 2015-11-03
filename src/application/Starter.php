@@ -25,6 +25,8 @@ class Starter {
     
     /** Sub title separator */
     public static $subTitleSeparator = ' | ';
+    
+    public static $cookieLanguageKey = 'language';
 
     /** Array of text domains for translations */
     public static $textDomains = null;
@@ -198,7 +200,7 @@ class Starter {
      */
     public static function setTextDomain($domain, $rootDir, $codeset='UTF-8') {
         // Set root directory to find translations:
-        bindtextdomain ($domain, $rootDir . "/nocache"); //<-- Gettext cache workaround (for develop mode only)
+        if (!defined('PRODUCTION_MODE')) bindtextdomain ($domain, $rootDir . "/nocache"); //<-- Gettext cache workaround (for develop mode only)
         bindtextdomain ($domain, $rootDir);
         // Set codeset:
         bind_textdomain_codeset($domain, $codeset ? $codeset : 'UTF-8');
@@ -308,6 +310,10 @@ class Starter {
             $controller = trim($route, "\/");
         }
         
+        //--- Set user's language:
+        if ($_COOKIE[self::$cookieLanguageKey]) {
+            $config['language'] = $_COOKIE[self::$cookieLanguageKey];
+        }
         //--- Set application language:
         if ($config['language']) { 
             self::setLanguage($config['language']);
