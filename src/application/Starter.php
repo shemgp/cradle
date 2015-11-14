@@ -2,12 +2,14 @@
 /*==============================================================================
  *  Title      : Starter
  *  Author     : Digger (c) SAD-Systems <http://sad-systems.ru>
- *  Created on : 03.10.2015
+ *  Created on : 14.11.2015
  *==============================================================================
  */
 namespace digger\cradle\application;
 
 use digger\cradle\common\Data;
+use digger\cradle\application\Language;
+use digger\cradle\application\Messages;
 
 /**
  * @brief Web application basic functions
@@ -25,6 +27,9 @@ class Starter {
     
     /** Sub title separator */
     public static $subTitleSeparator = ' | ';
+    
+    /** Cookie language key (to determine user's selection) */
+    public static $cookieLanguageKey = 'language';
 
     /** Flag =true if autoloader is included */
     private static $autoloader = false;
@@ -32,6 +37,7 @@ class Starter {
     /** Relative reverse path to web root */
     private static $uriRootBack = null;
 
+    
     /**
      * Returns a file name of currently registred autoloader
      * 
@@ -176,7 +182,7 @@ class Starter {
         
     return $allAssets;   
     }
-    
+
     /**
      * Start web application
      * 
@@ -225,6 +231,23 @@ class Starter {
             $action     = $m[2];
         } else {
             $controller = trim($route, "\/");
+        }
+        
+        //--- Set application language:
+        Language::$cookieLanguageKey = self::$cookieLanguageKey;
+        Language::$languages         = $config['languages']; //<-- The default value of application language is the first value of $config['languages']
+        //--- Set short form of language code (2-symbols):
+        if (is_array(Language::$languages) && strlen(Language::$languages[0]) == 2) { 
+            Language::$shortForm = true; 
+        }
+        $config['language'] = Language::getLanguage();
+        
+        //--- Set the current text domain:
+        Messages::$language    = $config['language'];
+        Messages::$textDomains = $config['textDomains'];
+        //--- Use the first text domain by default:
+        if (is_array(Messages::$textDomains)) {
+            Messages::useTextDomain(array_shift(array_keys(Messages::$textDomains)));
         }
         //-----------------------
         
