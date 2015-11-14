@@ -2,12 +2,14 @@
 /*==============================================================================
  *  Title      : Starter
  *  Author     : Digger (c) SAD-Systems <http://sad-systems.ru>
- *  Created on : 03.10.2015
+ *  Created on : 14.11.2015
  *==============================================================================
  */
 namespace digger\cradle\application;
 
 use digger\cradle\common\Data;
+use digger\cradle\application\Language;
+use digger\cradle\application\Messages;
 
 /**
  * @brief Web application basic functions
@@ -28,9 +30,6 @@ class Starter {
     
     /** Cookie language key (to determine user's selection) */
     public static $cookieLanguageKey = 'language';
-
-    /** Array of text domains for translations */
-    public static $textDomains = null;
 
     /** Flag =true if autoloader is included */
     private static $autoloader = false;
@@ -183,83 +182,6 @@ class Starter {
         
     return $allAssets;   
     }
-    
-    /**
-     * To set params of current text domain for translations
-     * 
-     * @param string $domain    The name of the text domain
-     * @param string $rootDir   Root directory to find translations
-     * @code
-     * ~~~
-     * folder structure:
-     *   /$rootDir
-     *         en/LC_MESSAGES/domainName.mo
-     *         ru/LC_MESSAGES/domainName.mo
-     * ~~~
-     * @endcode
-     * @param string $codeset UTF-8 by default.
-     */
-    public static function setTextDomain($domain, $rootDir, $codeset='UTF-8') {
-        // Set root directory to find translations:
-        if (!defined('PRODUCTION_MODE')) bindtextdomain ($domain, $rootDir . "/nocache"); //<-- Gettext cache workaround (for develop mode only)
-        bindtextdomain ($domain, $rootDir);
-        // Set codeset:
-        bind_textdomain_codeset($domain, $codeset ? $codeset : 'UTF-8');
-        // Use text domain:
-        textdomain ($domain);        
-    }
-    
-    /**
-     * Change current text domain for translation.
-     * 
-     * Property `self::$textDomains` mast be defined before:
-     * 
-     * @code
-     * ~~~
-     * self::$textDomains = [
-     *   'text_domain1' => [
-     *       'root'    => '/path/to/some_folder1',
-     *       'codeset' => 'UTF-8',
-     *   ],
-     *   'text_domain2' => [
-     *       'root'    => '/path/to/some_folder2',
-     *       'codeset' => 'UTF-8',
-     *   ],
-     *   ...
-     * ]
-     * ~~~
-     * @endcode
-     * 
-     * @param string $domain The name of the current text domain
-     * 
-     */
-    public static function useTextDomain($domain) {
-        if (isset(self::$textDomains[$domain])) {
-            extract(self::$textDomains[$domain]);
-            self::setTextDomain($domain, $root, $codeset);
-        }
-    }
-
-        /**
-     * Set application current language
-     * 
-     * @param  string $lang Value of HTML tag "lang" (en|ru|en-US|ru-RU|...)
-     * @return string 
-     */
-    public static function setLanguage($lang) { 
-        if (strlen($lang) < 3) {
-            // Two letters lang (en|ru|...):
-            $lang    = strtolower($lang);
-            $country = ($lang == 'en') ? 'US' : strtoupper($lang);
-            $lang   .= '_' . $country;
-        } else {
-            //--- Language pair (en-US|ru-RU):
-            $lang = str_replace('-', '_', $lang);
-        }
-         //putenv("LANG=" . $lang);
-    return setlocale(LC_ALL, $lang); //<-- "ru_RU"
-    }
-
 
     /**
      * Start web application
@@ -311,19 +233,21 @@ class Starter {
             $controller = trim($route, "\/");
         }
         
-        //--- Set user's language:
-        if ($_COOKIE[self::$cookieLanguageKey]) {
-            $config['language'] = $_COOKIE[self::$cookieLanguageKey];
-        }
         //--- Set application language:
-        if ($config['language']) { 
-            self::setLanguage($config['language']);
+        Language::$cookieLanguageKey = self::$cookieLanguageKey;
+        Language::$languages         = $config['languages']; //<-- The default value of application language is the first value of $config['languages']
+        //--- Set short form of language code (2-symbols):
+        if (is_array(Language::$languages) && strlen(Language::$languages[0]) == 2) { 
+            Language::$shortForm = true; 
         }
-        //--- Set current text domain:
-        self::$textDomains = $config['textDomains'];
-        if (is_array(self::$textDomains)) {
-            //--- use the first text domain by default:
-            self::useTextDomain(array_shift(array_keys(self::$textDomains)));
+        $config['language'] = Language::getLanguage();
+        
+        //--- Set the current text domain:
+        Messages::$language    = $config['language'];
+        Messages::$textDomains = $config['textDomains'];
+        //--- Use the first text domain by default:
+        if (is_array(Messages::$textDomains)) {
+            Messages::useTextDomain(array_shift(array_keys(Messages::$textDomains)));
         }
         //-----------------------
         
