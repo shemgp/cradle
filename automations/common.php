@@ -12,7 +12,7 @@ $configFile = $baseDir . '/config/main.php';
 
 //--- Load main configuration and start autoloader:
 
-require_once $baseDir . '/src' . '/application/Starter.php';
+require_once $baseDir . '/vendor' . '/digger/cradle/src/application/Starter.php';
 
 //--- Return config array:
 

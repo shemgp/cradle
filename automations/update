@@ -10,21 +10,26 @@
  * -----------------------------------------------------------------------------
  */
 
+//--- Commang line input arguments:
 $a = $argv[1];
 
+//--- Options:
 $o = [
     'all',
     'node',
     'bower',
     'composer',
     'autoload',
+    'templates'
 ];
 
+//--- Default action:
 if (!$a) {
     echo "Use options: \n\t". implode("\n\t", $o) . "\n";
     exit;
 }
 
+//--- Set application root:
 chdir(dirname(__DIR__));
 
 if ($a==$o[1] || $a==$o[0]) { 
@@ -72,6 +77,22 @@ if ($a==$o[4] || $a==$o[0]) {
     echo "Composer update autoload:\n"
        . "----------------------------------\n";
     system("php composer.phar dump-autoload");    
+    
+}
+
+if ($a==$o[5]) { 
+//--- Templates update -----------------------------------------------
+    echo "\n";
+    echo "Templates update:\n"
+       . "----------------------------------\n";
+    $target = "templates";
+    system("curl https://codeload.github.com/sad-systems/templates/zip/master > $target.zip\n"
+         . "unzip -oq $target.zip\n"
+         . "if [ ! -d $target ]; then mkdir $target; fi\n"
+         . "cp -rf ./templates-master/* ./$target\n"
+         . "rm -rf $target.zip\n"   
+         . "rm -rf ./templates-master\n"
+    );    
     
 }
 

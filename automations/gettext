@@ -1,0 +1,112 @@
+#!/usr/local/bin/php
+<?php
+/*==============================================================================
+ *  Title      : Gettext
+ *  Author     : Digger (c) SAD-Systems <http://sad-systems.ru>
+ *  Created on : 02.11.2015
+ *==============================================================================
+ * Console script
+ * to run from command line
+ * -----------------------------------------------------------------------------
+ */
+
+//--- Commang line input arguments:
+$a = $argv[1];
+
+//--- Options:
+$o = [
+    'extract',
+    'make',
+];
+
+//--- Load main config:
+
+extract(require 'common.php'); //<-- Get $textDomains
+
+//--- Default action:
+if (!$a) {
+    $a = $o[0];
+}
+
+//--- Unknown option:
+if (!in_array($a, $o)) { 
+    echo "Use options: \n\t". implode("\n\t", $o) . "\n(`" . $o[0] . "` by default)\n";
+    exit;
+}
+
+//--- Set application root:
+chdir(dirname(__DIR__));
+
+if ($a==$o[0]) { 
+//--- Extract messages and create *.po files -----------------------------------
+    echo "\n";
+    echo "Extract messages and create *.po files:\n"
+       . "---------------------------------------\n";
+    
+    if (is_array($textDomains)) {
+        foreach ($textDomains as $domain => $data) {
+            //--- For each language:
+            foreach (glob($data['root'] . "/*", GLOB_ONLYDIR) as $lang) {
+                if (is_link($lang)) { 
+                    //--- Skip symbolic links:
+                    continue; 
+                }
+                $output_dir  = $data['root'] . "/" . basename($lang) . "/LC_MESSAGES";
+                if (!is_dir($output_dir)) { mkdir($output_dir); }
+                $output_file = $output_dir . '/' . $domain . '.po';
+                $codeset     = $data['codeset'] ? $data['codeset'] : 'UTF-8';
+                if (!is_array($data['source'])) $data['source'] = [ $data['source'] ];
+                //--- For each source:
+                foreach ($data['source'] as $source) {
+                    if (!$source)              { $source .= '.'; }
+                    if (is_file($output_file)) { $join = '-j';   } else { $join = ''; }
+                    $cmd = "find $source -iname '*.php' | xargs xgettext --from-code=$codeset --default-domain='$domain' --output-dir=$output_dir $join";
+                    echo " source: $source\n $cmd\n";
+                    system($cmd);
+                    //--- Write CHARSET:
+                    if (!$join) {
+                        $file = preg_replace('/Content\-Type: text\/plain; charset=CHARSET/m', "Content-Type: text/plain; charset=$codeset", file_get_contents($output_file));
+                        file_put_contents($output_file, $file);
+                    }
+                }
+            
+            }
+        }
+    }
+}
+
+if ($a==$o[1]) { 
+//--- Compile *.po files to *.mo files: ----------------------------------------
+    echo "\n";
+    echo "Compile *.po files to *.mo files:\n"
+       . "---------------------------------\n";
+    
+    if (is_array($textDomains)) {
+        foreach ($textDomains as $domain => $data) {
+            //--- Gettext cache workaround (for develop mode only):
+            $nocache_link = $data['root'] . "/nocache";
+            if (!defined('PRODUCTION_MODE')) {
+                if (!is_link($nocache_link)) { system("ln -s " . $data['root'] . " " . $nocache_link); }
+            } else {
+                if (is_link($nocache_link))  { unlink($nocache_link); }
+            }            
+            //--- For each language:
+            foreach (glob($data['root'] . "/*", GLOB_ONLYDIR) as $lang) {
+                if (is_link($lang)) { 
+                    //--- Skip symbolic links:
+                    continue; 
+                }
+                $output_dir  = $data['root'] . "/" . basename($lang) . "/LC_MESSAGES";
+                //--- For each po file:
+                foreach (glob($output_dir . "/*.po") as $input_file) { 
+                    $output_file = preg_replace('/\.po$/', '', $input_file) . ".mo";
+                    $cmd = "msgfmt $input_file -o $output_file";
+                    echo " $cmd\n";
+                    system($cmd);
+                }
+            }
+        }
+    }    
+}
+
+echo "done\n";
