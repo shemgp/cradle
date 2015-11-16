@@ -112,7 +112,7 @@ class Language {
         //--- If lang is not acceptable set default language (the first of $languages):
         if ($lang === false) { $lang = self::getLanguageCode(self::$languages[0]); }
         //--- Set locale:
-        self::$locale   = setlocale(LC_ALL, $lang); //<-- "ru_RU"
+        self::$locale   = setlocale(LC_ALL, [$lang, $lang . '.UTF-8']); //<-- ["ru_RU", "ru_RU.UTF-8"]
         //--- Store current language:
         self::$language = $lang;
         //self::$inputLanguage = $inputLang;
@@ -172,12 +172,22 @@ class Language {
     }
     
     /**
-     * Returns system locale set by setLanguage function.
+     * Returns current system locale.
      * 
      * @return string
      */
     public static function getLocale() {
-        return self::$locale;
+        return setlocale(LC_ALL, 0);
+    }
+    
+    /**
+     * Returns locales list of current server.
+     * 
+     * @return array Locales list of current server
+     */
+    public static function getLocales() {
+        exec("locale -a", $list, $result);
+        return $list;
     }
     
 }
