@@ -22,7 +22,7 @@
     <tab type="examples" visible="yes" title="" intro=""/>
     
     <tab type="user" visible="yes" url="../demos" title="Demo"/>    
-    <_tab type="user" visible="yes" url="../tests" title="Tests"/>    
+    <tab type="user" visible="yes" url="../../tests" title="Tests"/>    
     
   </navindex>
 

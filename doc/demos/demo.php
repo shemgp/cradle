@@ -10,7 +10,7 @@
 <hr>
 <fielset><legend>Usage:</legend>
     <listing>
-        ...
+        ...data is updated...
     </listing>
 </fielset>
 <fielset><legend>Result:</legend>
