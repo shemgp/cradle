@@ -2,7 +2,7 @@
 /*==============================================================================
  *  Title      : Language
  *  Author     : Digger (c) SAD-Systems <http://sad-systems.ru>
- *  Created on : 14.11.2015
+ *  Created on : 11.01.2016
  *==============================================================================
  */
 namespace digger\cradle\application;
@@ -156,13 +156,24 @@ class Language {
     }
     
     /**
-     * Returns the code of current language
+     * Returns the code of current language (selected by user or default)
+     * 
+     * @param $shortForm            boolean TRUE is 2-symbols form (en|ru|...).
+     *                                      FALSE is 5-symbols form (en-US|ru-RU|...).
+     * @param $acceptableLanguages  array   List of acceptable languages. 
+     *                                      The first in list is the default.
      * 
      * @return string The code of current language.
      *                Can be 2-symbols form (en|ru|...) or 5-symbols form (en-US|ru-RU|...) depending on the $shortForm value.
      * @see shortForm 
      */
-    public static function getLanguage() {
+    public static function getLanguage($shortForm = null, $acceptableLanguages = null) {
+        if ($shortForm === null) { 
+            $shortForm = self::$shortForm; 
+        }
+        if (is_array($acceptableLanguages)) { 
+            self::$languages = $acceptableLanguages; 
+        }
         //--- Return the stored language:
         if (!self::$language) {
             //--- If is set $_COOKIE's languge: 
@@ -174,7 +185,7 @@ class Language {
             }
         }
         //--- Short form:
-        if (self::$shortForm) { return substr(self::$language, 0, 2); }
+        if ($shortForm) { return substr(self::$language, 0, 2); }
         //--- Standard form:
     return self::$language;
     }
