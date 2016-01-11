@@ -30,8 +30,8 @@ class Language {
      * @var array
      */
     public static $languages = [
-        "en", // en_US
-        "ru", // ru_RU
+        "en", // en-US
+        "ru", // ru-RU
     ];    
 
     /**
@@ -39,11 +39,17 @@ class Language {
      * @see getLanguage
      * 
      * TRUE is 2-symbols form (en|ru|...).
-     * FALSE is 5-symbols form (en_US|ru_RU|...).
+     * FALSE is 5-symbols form (en-US|ru-RU|...).
      * @var boolean 
      */
     public static $shortForm = false;
 
+    /**
+     * Language code delimiter
+     * @var string 
+     */
+    public static $delimiter = '-';
+    
     //--------------------------------------------------------------------------
     // Private
     //--------------------------------------------------------------------------
@@ -59,20 +65,20 @@ class Language {
 //==============================================================================    
     
     /**
-     * Converts the input language code to the standard form (language_COUNTRY)
+     * Converts the input language code to the standard form (language-COUNTRY)
      * 
      * @param  string $lang Input language code - two letters or languge pair ( en | en-us | en_US | ru | ru-RU | ... )
-     * @return string Language output code: language_COUNTRY ( en_US | ru_RU | ... )
+     * @return string Language output code: language-COUNTRY ( en-US | ru-RU | ... )
      */
     public static function getLanguageCode($lang) {
         if (strlen($lang) < 3) {
             // Two letters lang (en|ru|...):
             $lang    = strtolower($lang);
             $country = ($lang == 'en') ? 'US' : strtoupper($lang);
-            $lang   .= '_' . $country;
+            $lang   .= self::$delimiter . $country;
         } else {
             //--- Language pair (en-US|ru-RU|en-us|ru-ru|...):
-            $lang = strtolower($lang[0] . $lang[1]) . "_" . strtoupper($lang[3] . $lang[4]); //str_replace('-', '_', $lang);
+            $lang = strtolower($lang[0] . $lang[1]) . self::$delimiter . strtoupper($lang[3] . $lang[4]);
         }
     return $lang;    
     }
@@ -112,7 +118,9 @@ class Language {
         //--- If lang is not acceptable set default language (the first of $languages):
         if ($lang === false) { $lang = self::getLanguageCode(self::$languages[0]); }
         //--- Set locale:
-        self::$locale   = setlocale(LC_ALL, [$lang, $lang . '.UTF-8']); //<-- ["ru_RU", "ru_RU.UTF-8"]
+        $lang_locale    = str_replace("-", "_", $lang); //<-- "ru_RU"
+        $locales        = array_merge([$lang_locale], self::getLocales("$lang_locale.utf"));
+        self::$locale   = setlocale(LC_ALL, $locales);  //<-- ["ru_RU", "ru_RU.UTF-8"]
         //--- Store current language:
         self::$language = $lang;
         //self::$inputLanguage = $inputLang;
@@ -151,7 +159,7 @@ class Language {
      * Returns the code of current language
      * 
      * @return string The code of current language.
-     *                Can be 2-symbols form (en|ru|...) or 5-symbols form (en_US|ru_RU|...) depending on the $shortForm value.
+     *                Can be 2-symbols form (en|ru|...) or 5-symbols form (en-US|ru-RU|...) depending on the $shortForm value.
      * @see shortForm 
      */
     public static function getLanguage() {
@@ -185,9 +193,14 @@ class Language {
      * 
      * @return array Locales list of current server
      */
-    public static function getLocales() {
-        exec("locale -a", $list, $result);
-        return $list;
+    public static function getLocales($filter = null) {
+        if ($filter) { 
+            $filter = " | grep -i '$filter'"; 
+        } else { 
+            $filter = ""; 
+        }
+        exec("locale -a" . $filter, $list);
+    return $list;
     }
     
 }
