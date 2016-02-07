@@ -140,5 +140,22 @@ class Basic {
            $new_array = $array; 
         }
     return $new_array;
-    }    
+    }
+    
+    /**
+     * To initialize some class by configuration array
+     * 
+     * @param class $class  Some class
+     * @param array $config Configuration array
+     */
+    public static function initClass($class, $config = null) {
+        if (is_array($config)) {
+            foreach ($config as $key => $value) {
+                if (property_exists($class, $key)) { 
+                    $class->$key = $value;
+                }
+            }
+        }        
+    }
+    
 }
