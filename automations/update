@@ -1,0 +1,99 @@
+#!/usr/local/bin/php
+<?php
+/*==============================================================================
+ *  Title      : Update components (NodeJS, Bower, Composer)
+ *  Author     : Digger (c) SAD-Systems <http://sad-systems.ru>
+ *  Created on : 03.10.2015
+ *==============================================================================
+ * Console script
+ * to run from command line
+ * -----------------------------------------------------------------------------
+ */
+
+//--- Commang line input arguments:
+$a = $argv[1];
+
+//--- Options:
+$o = [
+    'all',
+    'node',
+    'bower',
+    'composer',
+    'autoload',
+    'templates'
+];
+
+//--- Default action:
+if (!$a) {
+    echo "Use options: \n\t". implode("\n\t", $o) . "\n";
+    exit;
+}
+
+//--- Set application root:
+chdir(dirname(__DIR__));
+
+if ($a==$o[1] || $a==$o[0]) { 
+//--- Node modules update ------------------------------------------------------
+    echo "\n";
+    echo "NodeJS modules update:\n"
+       . "----------------------------------\n";
+    system("npm update");    
+    
+}
+
+if ($a==$o[2] || $a==$o[0]) { 
+//--- Bower components update --------------------------------------------------
+    echo "\n";
+    echo "Bower components update:\n"
+       . "----------------------------------\n";
+    system("bower update --allow-root");    
+    
+}
+
+if ($a==$o[3] || $a==$o[0]) { 
+//--- Composer update ----------------------------------------------------------
+    if (!file_exists("composer.phar")) {
+        echo "\n";
+        echo "Installing the Composer:\n"
+           . "----------------------------------\n";
+        system("curl -sS https://getcomposer.org/installer | php");
+    }
+    
+    echo "\n";
+    echo "Composer self-update:\n"
+       . "----------------------------------\n";
+    system("php composer.phar self-update");    
+    
+    echo "\n";
+    echo "Composer components update:\n"
+       . "----------------------------------\n";
+    system("php composer.phar update");    
+    
+}
+
+if ($a==$o[4] || $a==$o[0]) { 
+//--- Composer autoloader update -----------------------------------------------
+    echo "\n";
+    echo "Composer update autoload:\n"
+       . "----------------------------------\n";
+    system("php composer.phar dump-autoload");    
+    
+}
+
+if ($a==$o[5]) { 
+//--- Templates update -----------------------------------------------
+    echo "\n";
+    echo "Templates update:\n"
+       . "----------------------------------\n";
+    $target = "templates";
+    system("curl https://codeload.github.com/sad-systems/templates/zip/master > $target.zip\n"
+         . "unzip -oq $target.zip\n"
+         . "if [ ! -d $target ]; then mkdir $target; fi\n"
+         . "cp -rf ./templates-master/* ./$target\n"
+         . "rm -rf $target.zip\n"   
+         . "rm -rf ./templates-master\n"
+    );    
+    
+}
+
+echo "done\n";

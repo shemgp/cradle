@@ -15,8 +15,8 @@ use Exception;
  * 
  * A simple class to send commands to remote host through the TELNET protocol.
  * 
- * TELNET protocol specification: <http://tools.ietf.org/html/rfc854>
- * TELNET option:    <http://www.iana.org/assignments/telnet-options/telnet-options.xhtml>
+ * TELNET protocol specification: <http://tools.ietf.org/html/rfc854><br>
+ * TELNET option:    <http://www.iana.org/assignments/telnet-options/telnet-options.xhtml><br>
  * TELNET terminals: <http://www.iana.org/assignments/terminal-type-names/terminal-type-names.xhtml#terminal-type-names-1>
  *
  * @version 4.0

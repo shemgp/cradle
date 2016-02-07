@@ -1,0 +1,38 @@
+#!/usr/local/bin/php
+<?php
+/*==============================================================================
+ *  Title      : Run application's tests
+ *  Author     : Digger (c) SAD-Systems <http://sad-systems.ru>
+ *  Created on : 06.10.2015
+ *==============================================================================
+ * Console script
+ * to run from command line
+ * -----------------------------------------------------------------------------
+ */
+
+//--- Load main config:
+
+$config = require 'common.php';
+
+//--- Set sub config:
+
+$basePath = $config['basePath'];
+$appTests = require $config['appTests'];
+$runFile  = $appTests['destinationRoot'] . '/' . $appTests['runFileName'];
+
+if (is_file($runFile)) {
+    
+    //--- Run tests:
+    system($runFile);
+    
+} else {
+    
+    //--- Generate tests skeletons:
+    echo "WARN: Run file doesn't exists, need to create test...\n\n";
+    require 'gentests';
+    
+    //--- Run tests:
+    system($runFile);
+    
+}
+    

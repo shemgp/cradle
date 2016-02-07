@@ -12,12 +12,13 @@ phpunit.phar
 /phpunit.xml
 
 # === Master branch ===
-/automations
-/config/*
-!/config/main.php
-!/config/description.php
-!/config/tests.php
-/templates
+#/automations
+#/config/*
+#!/config/main.php
+#!/config/description.php
+#!/config/tests.php
+#/templates
 
 # === Develop branch ==
-#/templates
+/automations
+/templates

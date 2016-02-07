@@ -1,0 +1,69 @@
+#!/usr/local/bin/php
+<?php
+/*==============================================================================
+ *  Title      : Build (publish) css and javascript files into the public_html dir
+ *               It is a wrap for `gulp`.
+ *  Author     : Digger (c) SAD-Systems <http://sad-systems.ru>
+ *  Created on : 21.10.2015
+ *==============================================================================
+ * Console script
+ * to run from command line
+ * -----------------------------------------------------------------------------
+ */
+
+include dirname(__DIR__) . '/config/main.php'; //<--- There is PRODUCTION_MODE may be defined
+
+echo defined('PRODUCTION_MODE') ? "PRODUCTION MODE\n" : "DEVELOP MODE\n" ;
+
+//--- Commang line input arguments:
+$a = $argv[1];
+
+//--- Options:
+$o = [
+    'all',
+    'css',
+    'js',
+];
+
+//--- Default option:
+if (!$a) {
+    $a = $o[0];
+}
+
+//--- Unknown option:
+if (!in_array($a, $o)) { 
+    echo "Use options: \n\t". implode("\n\t", $o) . "\n(`" . $o[0] . "` by default)\n";
+    exit;
+}
+
+//--- Set application root:
+chdir(dirname(__DIR__));
+
+if ($a==$o[0]) { 
+//--- Build all ------------------------------------------------------
+    echo "\n";
+    echo "Build all:\n"
+       . "----------------------------------\n";
+    defined('PRODUCTION_MODE') ? system("gulp") : system("gulp build-dev") ;    
+    
+}
+
+if ($a==$o[1]) { 
+//--- Build css --------------------------------------------------
+    echo "\n";
+    echo "Build css only:\n"
+       . "----------------------------------\n";
+    defined('PRODUCTION_MODE') ? system("gulp build-css") : system("gulp build-css-dev") ;    
+    
+}
+
+if ($a==$o[2]) { 
+//--- Build javascripts --------------------------------------------
+    echo "\n";
+    echo "Build javascripts only:\n"
+       . "----------------------------------\n";
+    defined('PRODUCTION_MODE') ? system("gulp build-js") : system("gulp build-js-dev") ;    
+    
+}
+
+echo "done\n";
