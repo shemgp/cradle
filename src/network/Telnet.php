@@ -307,7 +307,7 @@ class Telnet {
      * 
      * @return <i>string|array|false</i> Text data of the response from the remote side.
      *                                   If the `$command` was an array (or string contained "\n")
-     *                                   the response data would be an array of format: 'command' => 'response text'.
+     *                                   the response data would be an array: [ 0 => 'response to command-1', 1 => 'response to command-2', ... ]
      *                                   Returns FALSE on error.
      */
     public function exec($command, $timeout = null) {
@@ -326,7 +326,7 @@ class Telnet {
             for ($i=0; $i<count($commands); $i++) {
                 //--- the command may include some other commands separate by "\n":
                 foreach (explode("\n", $commands[$i]) as $singleCommand) {
-                    if ( ($result[$singleCommand] = $this->executeCommand($singleCommand, $timeout)) === false ) {
+                    if ( ($result[] = $this->executeCommand($singleCommand, $timeout)) === false ) {
                         $i = count($commands);
                         break;
                     }
