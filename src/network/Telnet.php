@@ -23,8 +23,8 @@ use Exception;
  * @author Digger <mrdigger@sad-systems.ru>
  * @copyright (c) 2016, SAD-Systems
  * 
- * @todo How to use:
- * @code
+ * <h3>Example of usage:</h3>
+ * ~~~
    <?php
  
     //--- 1. Short usage:
@@ -103,8 +103,7 @@ use Exception;
     }
     
     $t->close();
-
- * @endcode
+ * ~~~
  */
 class Telnet {
 
@@ -113,49 +112,49 @@ class Telnet {
     //--------------------------------------------------------------------------
     
     /**
-     * @var string The target host (name|ip-address) 
+     * @var_ <i>string</i> The target host (name|ip-address) 
      */
     public $host;
     /**
-     * @var int The target TCP port.
+     * @var_ <i>int</i> The target TCP port.
      */
-    public $port      = 23;
+    public $port = 23;
     /**
-     * @var string The username for authentication by 'user & password' method. 
+     * @var_ <i>string</i> The username for authentication by 'user & password' method. 
      */
     public $user; 
     /**
-     * @var string The password for authentication by 'user & password' method or 'just password' method. 
+     * @var_ <i>string</i> The password for authentication by 'user & password' method or 'just password' method. 
      */
     public $password;
     
     /**
-     * @var int The socket default timeout in seconds. 
+     * @var_ <i>int</i> The socket default timeout in seconds. 
      * Defines how long should wait the response from remote side.
      */
-    public $timeout   = 10;
+    public $timeout = 10;
     
     /**
-     * @var boolean If set true, the data returned by `exec` method will be trimmed.
+     * @var_ <i>boolean</i> If set true, the data returned by `exec` method will be trimmed.
      * The echo of the command will be deleted from the beginning and the marker 'Ready for input'
      * of the remote side will be deleted from the end.
      */
     public $trimResponse = true;
     
     /**
-     * @var boolean  Defines the method of error throwing.  <br>
-     *  Possible values:                                    <br>
+     * @var_ <i>boolean</i>  Defines the method of error throwing. <br>
+     *  Possible values:                                           <br>
      *              true  - log error to own buffer (no exception),
      *                      the returned value of fail `exec` will be === false;     <br>
      *              false - throw exeption on error;
      */
-    public $errorSilent     = true; // no exception
+    public $errorSilent = true; // no exception
     
     /**
-     * @var mixed Defines a debug target.   <br>
+     * @var_ <i>mixed</i> Defines a debug target.  <br>
      *  Possible values:                    <br>
-     *      false    - no debug;            
-     *      1        - debug to buffer;     
+     *      false    - no debug;            <br>
+     *      1        - debug to buffer;     <br>
      *      2        - debug to STDIN;      <br>
      *      filename - debug to file;
      */
@@ -166,32 +165,42 @@ class Telnet {
     //---------------------------------
     
     /**
-     * @var boolean Enable or disable echo.                       <br>
+     * @var_ <i>boolean</i> Enable or disable echo.               <br>
      * TELNET option (1) "ECHO-ON" <http://tools.ietf.org/html/rfc857>
      */
     public $terminalEchoOn  = false;
     /**
-     * @var boolean Enable or disable suppressing transmission of the 'TELNET GO AHEAD' character.<br>
+     * @var_ <i>boolean</i> Enable or disable suppressing transmission of the 'TELNET GO AHEAD' character.<br>
      * TELNET option (3) "SUPPRESS-GO-AHEAD" <http://tools.ietf.org/html/rfc858>
      */
     public $terminalGoAhead = true;
     /**
-     * @var string Terminal type name.                                         <br>
+     * @var_ <i>string</i> Terminal type name.                                 <br>
      * TELNET option (24) "TERMINAL-TYPE" <http://tools.ietf.org/html/rfc1091> <br>
      * TELNET terminal names <http://www.iana.org/assignments/terminal-type-names/terminal-type-names.xhtml#terminal-type-names-1>
      */
     public $ternimalType    = "DEC-VT100";
     /**
-     * @var int Value of terminal characters in line.                   <br>
+     * @var_ <i>int</i> Value of terminal characters in line.           <br>
      * TELNET option (31) "WINDOW-SIZE" <http://tools.ietf.org/html/rfc1073>
      */
     public $terminalWidth   = 0;
     /**
-     * @var int Value of terminal lines count.                          <br>
+     * @var_ <i>int</i> Value of terminal lines count.                  <br>
      * TELNET option (31) "WINDOW-SIZE" <http://tools.ietf.org/html/rfc1073>
      */
     public $terminatHeight  = 0;
-
+    
+    //---------------------------------
+    // Spesial
+    //---------------------------------
+    
+    /**
+     * @var_ <i>string</i> Regular expression template to find a marker 'Ready for input'
+     * of remote side. By default it set as: '/^[^#>\$\%]+[#>\$\%]\s*$/'
+     */
+    public $readyKeyTemplate = '/^[^#>\$\%]+[#>\$\%]\s*$/'; 
+    
     //---------------------------------
     // Error codes
     //---------------------------------
@@ -203,16 +212,6 @@ class Telnet {
     const ERR_CLOSED_BY_REMOTE    = 5;
     const ERR_TIMEOUT             = 6;
 
-    //---------------------------------
-    // Spesial
-    //---------------------------------
-    
-    /**
-     * @var string Regular expression template to find a marker 'Ready for input'
-     * of remote side. By default it set as: '/^[^#>\$\%]+[#>\$\%]\s*$/'
-     */
-    public $readyKeyTemplate = '/^[^#>\$\%]+[#>\$\%]\s*$/'; 
-    
     //--------------------------------------------------------------------------
     // Public functions
     //--------------------------------------------------------------------------
@@ -239,7 +238,7 @@ class Telnet {
      * @param  array|string    $config  An array of properties to initialize the class. 
      *                                  If `$config` is a string it will be interpreted as a `host` 
      *                                  (same as $config = [ 'host' => $config ]).
-     * @return resource|false           Resource ID of the open socket or FALSE on fail.
+     * @return <i>resource|false</i>    Resource ID of the open socket or FALSE on fail.
      */
     public function open( $config = null ) {
         
@@ -305,10 +304,10 @@ class Telnet {
      * @param  int           $timeout   (Option) Timeout in seconds to wait the response. 
      *                                  If it doesn't set the default timeout will be used.
      * 
-     * @return string|array|false       Text data of the response from the remote side.
-     *                                  If the `$command` was an array (or string contained "\n")
-     *                                  the response data would be an array of format: 'command' => 'response text'.
-     *                                  Returns FALSE on error.
+     * @return <i>string|array|false</i> Text data of the response from the remote side.
+     *                                   If the `$command` was an array (or string contained "\n")
+     *                                   the response data would be an array of format: 'command' => 'response text'.
+     *                                   Returns FALSE on error.
      */
     public function exec($command, $timeout = null) {
         
@@ -347,7 +346,7 @@ class Telnet {
 
     /**
      * Returns data of the last error
-     * @return array An array of error data (text message, code, target, ...)
+     * @return <i>array</i> An array of error data (text message, code, target, ...)
      */
     public function getLastError() {
         return count($this->errorBuffer)>0 ? $this->errorBuffer[count($this->errorBuffer)-1] : null;
@@ -355,7 +354,7 @@ class Telnet {
 
     /**
      * Returns an array of all errors stored in error buffer.
-     * @return array An array of error buffer.
+     * @return <i>array</i> An array of error buffer.
      */
     public function getErrors() {
         return $this->errorBuffer;
@@ -363,7 +362,7 @@ class Telnet {
     
     /**
      * Returns an array of debug buffer if `debug` property is not FALSE.
-     * @return array An array of debug buffer.
+     * @return <i>array</i> An array of debug buffer.
      */
     public function getDebug() {
         return $this->debugBuffer;
@@ -371,7 +370,7 @@ class Telnet {
 
     /**
      * Returns a marker 'Ready for input' of remote side
-     * @return string The marker
+     * @return <i>string</i> The marker
      */
     public function getReadyKey() {
         return $this->readyKey;
@@ -380,9 +379,9 @@ class Telnet {
     /**
      * Checks if a host is reachable
      *  
-     * @param  int      $timeout (Option) Timeout in seconds to wait the response from remote side.
-     * @return boolean  TRUE  - host is reachable. <br>
-     *                  FALSE - host is unreachable.
+     * @param  int   $timeout (Option) Timeout in seconds to wait the response from remote side.
+     * @return <i>boolean</i>  TRUE  - host is reachable. <br>
+     *                         FALSE - host is unreachable.
      */
     public function isAlive($timeout = null) {
         
@@ -880,7 +879,7 @@ class Telnet {
     }
     
     /**
-     * @var array TELNET commands 
+     * @var_ array TELNET commands 
      */
     private $tmCmd = [
         "SE"   => 0xf0, // (240)
@@ -889,12 +888,12 @@ class Telnet {
         "WONT" => 0xfc, // (252)
         "DO"   => 0xfd, // (253)
         "DONT" => 0xfe, // (254)
-        "IAC"  => 0xff  // (255) «Interpret as Command»
+        "IAC"  => 0xff, // (255) «Interpret as Command»
     ];
     private $tmCmdCodes = null;
 
     /**
-     * @var array TELNET options 
+     * @var_ array TELNET options 
      */
     private $tmOption = [ // http://www.iana.org/assignments/telnet-options/telnet-options.xhtml
         "ECHO"   => 0x1,  // (1)  ECHO              http://tools.ietf.org/html/rfc857
