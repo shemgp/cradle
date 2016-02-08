@@ -41,7 +41,7 @@ class Starter {
     /**
      * Returns a file name of currently registred autoloader
      * 
-     * @return string|false Full filename or false
+     * @return <i>string|false</i> Full filename or false
      */
     public static function getAutoloaderFile() {
         return self::$autoloader;
@@ -53,7 +53,7 @@ class Starter {
      * @param  string        $config      full name of main configuration file
      * @param  boolean       $appInfo     Include (or not) application information (option). False by default.
      * @param  string|array  $assetsFiles [basename|list of basenames] of assets configuration file to include (option). Not included by default. 
-     * @return array
+     * @return <i>array</i>
      */
     public static function getConfig($config, $appInfo = false, $assetsFiles = null) {
         
@@ -104,7 +104,7 @@ class Starter {
     /**
      * Gets the URI root path
      * 
-     * @return string
+     * @return <i>string</i>
      */
     public static function getUriRootBack() {
         if (self::$uriRootBack !== null) {
@@ -134,7 +134,7 @@ class Starter {
      * Create relative to web root link
      * 
      * @param  string $link
-     * @return string
+     * @return <i>string</i>
      */
     public static function getRelativeLink($link) {
         if (preg_match('/^\w+:\/\//', $link)) {
@@ -150,7 +150,7 @@ class Starter {
      * 
      * @param  array $assetFiles List of files returns array of data.
      * @param string $assetPath (option) Path to find files with data.
-     * @return array Merged arrays data.
+     * @return <i>array</i> Merged arrays data.
      */
     public static function getAssets($assetFiles, $assetPath=null) {
         if (!is_array($assetFiles)) { $assetFiles = [$assetFiles]; }
@@ -200,9 +200,8 @@ class Starter {
      * 
      * @param string|array $config File name or array of params of application configuration.
      * 
-     * @todo
-     * Example:
-     * @code
+     * <h3>Example:</h3>
+     * ~~~
      * 
      * file: index.php
      * 
@@ -215,7 +214,7 @@ class Starter {
      * //--- Start application:
      *   digger\cradle\application\Starter::startApp($configFile);
      * 
-     * @endcode
+     * ~~~
      */
     public static function startApp($config) {
         

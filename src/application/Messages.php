@@ -23,7 +23,7 @@ class Messages {
      * Array of text domains for translations 
      * 
      * Structure:
-     * @code
+     * ~~~
      * 
      * self::$textDomains = [
      *   'text_domain1' => [
@@ -37,7 +37,7 @@ class Messages {
      *   ...
      * ]
      * 
-     * @endcode
+     * ~~~
      */
     public static $textDomains = null;
 
@@ -62,7 +62,7 @@ class Messages {
      * 
      * @param string $domain    The name of the text domain
      * @param string $rootDir   Root directory to find translations
-     * @code
+     * ~~~
      * 
      * The root directory structure:
      * 
@@ -90,7 +90,7 @@ class Messages {
      *         ru/domainName.php
      *         ...
      * 
-     * @endcode
+     * ~~~
      * @param string $codeset UTF-8 by default.
      */
     public static function setTextDomain($domain, $rootDir, $codeset='UTF-8') {
@@ -131,28 +131,29 @@ class Messages {
      * If you can't use the `gettext` for any reason, the simplest way to replace it 
      * is to use this method.
      * 
-     * But in this case you should keep your translation messages in php file (directory structure @see setTextDomain).
+     * But in this case you should keep your translation messages in php file (for directory structure see: `setTextDomain`).
      * The php file mast returns an array of structure:
      * 
-     * @code
+     * ~~~
      * 
      * return [
      *  'message_id' => 'message text',
      *  ...
      * ]
      * 
-     * @endcode
+     * ~~~
      * 
-     * @todo How to use:
-     * @code 
+     * @param  string  $text text message
+     * @return <i>string</i> text message
+     * @see setTextDomain
+     * 
+     * <h3>Example:</h3>
+     * ~~~ 
      * <?php 
      * 
      * echo Messages::_('Hello world!');
      * 
-     * @endcode
-     * 
-     * @param  string $text text message
-     * @return string text message
+     * ~~~
      */
     public static function _($text){  
         if (!self::$textDomains[self::$textDomain]["data"]) {

@@ -20,8 +20,8 @@ use digger\cradle\common\Html;
  * @author Digger <mrdigger@sad-systems.ru>
  * @copyright (c) 2015, SAD-Systems
  * 
- * @todo How to use:
- * @code
+ * <h3>Example of usage:</h3>
+ * ~~~
  * <?php
  * //--- file: index.php
  * 
@@ -36,7 +36,7 @@ use digger\cradle\common\Html;
  *     <div class="content"> <?php include $contentFile; ?> </div>
  *   </body>
  * </html>
- * @endcode
+ * ~~~
  */
 class FileNavigation {
     
@@ -56,7 +56,7 @@ class FileNavigation {
      * 
      * @param array $arrayParams Initialization parameters of the class.
      * 
-     * Example:
+     * <h3>Example:</h3>
      * ~~~
      * $navigation = new FileNavigation(['filePatterns' => '.*\.php$', 'excludePatterns' => '^' . basename(__FILE__) . '$']);
      * ~~~
@@ -74,7 +74,7 @@ class FileNavigation {
     /**
      * Returns current active item
      * 
-     * @return string
+     * @return <i>string</i> Current active item
      */
     public function getCurrentItem() {
         return $this->currentItem;
@@ -83,7 +83,7 @@ class FileNavigation {
     /**
      * Returns HTML code list contains tree of files spesified by class properties. 
      * 
-     * @return string HTML code
+     * @return <i>string</i> HTML code
      */
     public function getNavigation() {
         

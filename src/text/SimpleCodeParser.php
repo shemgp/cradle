@@ -18,8 +18,8 @@ use digger\cradle\common\Basic;
  * @author Digger <mrdigger@sad-systems.ru>
  * @copyright (c) 2015, SAD-Systems
  * 
- * @todo How to use:
- * @code
+ * <h3>Example of usage:</h3>
+ * ~~~
  * 
  * require_once 'autoload.php';
  * 
@@ -27,7 +27,7 @@ use digger\cradle\common\Basic;
  * 
  * print_r( SimpleCodeParser::parseCode( file_get_contents('my_php_file.php') ) );
  * 
- * @endcode
+ * ~~~
  */
 class SimpleCodeParser {
     
@@ -35,7 +35,7 @@ class SimpleCodeParser {
      * To strip input text data (code) of comments
      * 
      * @param  string $data Text data contains a source code. 
-     * @return string text  Data without code comments (such as^ /* ...  and //... ).
+     * @return <i>string</i> text  Data without code comments (such as^ /* ...  and //... ).
      */
     public static function stripComments($data) {
         $data = preg_replace('/\/\*.*?\*\//ms', "", $data);
@@ -47,15 +47,15 @@ class SimpleCodeParser {
      * To split a source code into parts of namespases 
      * 
      * @param string $data  Text data contains a source code.
-     * @return hash         Array structure: 
-     * @code
+     * @return <i>array</i> Array structure: 
+     * ~~~
      * array( 
      *      "" => "...code inside the GLOBAL namespace...",
      *      "namespace1" => "...code inside the namespace1...",
      *      "namespace2" => "...code inside the namespace2...", 
      *      ...
      *  )
-     * @endcode
+     * ~~~
      */
     public static function getNamespaces ($data) {
         if (preg_match_all('/^\s*namespace\s+([\w\\\\]+)./ms', $data, $m)) {
@@ -74,14 +74,14 @@ class SimpleCodeParser {
      * To find all functions into a source code
      * 
      * @param  string $data Text data contains a source code.
-     * @return hash         Array structure: 
-     * @code
+     * @return <i>array</i> Array structure: 
+     * ~~~
      * array( 
      *      "function1" => "parameters of function",
      *      "function2" => "parameters of function", 
      *      ...
      *  )
-     * @endcode
+     * ~~~
      */
     public static function getFunctions ( $data ) {
         if (preg_match_all('/^\s*function\s+([\w_]+)\s*\(([^\)]*)\)[^\{]*\{/ms', $data, $m)) {
@@ -100,8 +100,8 @@ class SimpleCodeParser {
      * To find all methods of class into a source code of a given class
      * 
      * @param  string $data Text data contains a class source code.
-     * @return hash         Array structure: 
-     * @code
+     * @return <i>array</i> Array structure: 
+     * ~~~
      * array( 
      *      "method1" => array(
      *                      "type"   => static | abstract | "", 
@@ -111,7 +111,7 @@ class SimpleCodeParser {
      *      "method2" => array( ... ), 
      *      ...
      *  )
-     * @endcode
+     * ~~~
      */
     public static function getClassMethods ( $data ) {
         if (preg_match_all('/^\s*([\w\s]*)\s*function\s+([\w_]+)\s*\(([^\{]*)\)[^\{\)]*\{/ms', $data, $m)) {
@@ -137,7 +137,7 @@ class SimpleCodeParser {
      * Get the first brace block positions contains { ...some data... }
      * 
      * @param  string $data Text data contains a class source code.
-     * @return hash         Array structure:
+     * @return <i>array</i> Array structure:
      * 
      * array ( startPosition, endPosition )
      * 
@@ -161,7 +161,7 @@ class SimpleCodeParser {
      * 
      * @param  string  $data        Text data contains a class source code.
      * @param  boolean $stripped    If TRUE: the first and the last braces wil be stripped from result.
-     * @return string               Data placed inside two braces ( { ...some data... } ).
+     * @return <i>string</i>        Data placed inside two braces ( { ...some data... } ).
      */
     public static function getFirstBraceBlock( $data, $stripped=true ) {
         if (($p=self::getFirstBraceBlockPos($data)) === false) {
@@ -179,8 +179,8 @@ class SimpleCodeParser {
      * To find all objects (classes and functions) into a source code
      * 
      * @param  string $data Text data contains a source code.
-     * @return hash         Array structure: 
-     * @code
+     * @return <i>array</i> Array structure: 
+     * ~~~
      * array(
      *      "classes" => array(
      *          "class1" => array( 
@@ -197,7 +197,7 @@ class SimpleCodeParser {
      *          ...
      *      )
      * )
-     * @endcode
+     * ~~~
      */    
     public static function getObjects( $data ) {
         if (preg_match_all('/^\s*class\s+([\w_]+)\s*([^\{]*)\{/ms', $data, $m)) {
@@ -229,8 +229,8 @@ class SimpleCodeParser {
      * It is a main method to use.
      * 
      * @param  string $data  Text data contains a source code.
-     * @return hash          Array structure: 
-     * @code
+     * @return <i>array</i>  Array structure: 
+     * ~~~
      * array( 
      *  "namespace1" => array(
      *      "classes" => array(
@@ -250,7 +250,7 @@ class SimpleCodeParser {
      *  ),
      *  ...
      * )
-     * @endcode
+     * ~~~
      */
     public static function parseCode($data) {
         $data       = self::stripComments( $data ); // strip of comments

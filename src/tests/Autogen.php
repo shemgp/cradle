@@ -22,10 +22,8 @@ use digger\cradle\text\SimpleCodeParser;
  * @author Digger <mrdigger@sad-systems.ru>
  * @copyright (c) 2015, SAD-Systems
  * 
- * @throws Exception
- * 
- * @todo How to generate tests:
- * @code
+ * <h3>Example of usage:</h3>
+ * ~~~
  * require_once 'autoload.php';
  * 
  * use digger\cradle\common\Autogen;
@@ -39,7 +37,9 @@ use digger\cradle\text\SimpleCodeParser;
  * } catch (Exception $e) {
  *    echo "ERROR: " . $e->getMessage() . "\n";    
  * }
- * @endcode
+ * ~~~
+ * 
+ * @throws Exception
  * 
  */
 class Autogen {
@@ -49,33 +49,33 @@ class Autogen {
 //------------------------------------------------------------------------------
     
     /**
+     * @var_ <i>string</i> 
      * Class name template for test
-     * @var string 
      */
     public $testClassName = "[NAME]Test";
     
     /**
+     * @var_ <i>string</i>
      * Method name template for test
-     * @var string
      */
     public $testName = "test_[NAME]";
     
     /**
+     * @var_ <i>string</i>
      * Array of regular expressions to exclude some methods (such as: __construct, __destruct, and so on ...)
-     * @var string
      */
     public $excludeNames = [ "^__" ];
 
     /**
+     * @var_ <i>string</i>
      * Namespace for test
      * @warning Do not recomended to change this default value!
-     * @var string
      */
     public $testNameSpace = ""; 
     
     /**
+     * @var_ <i>string</i> 
      * Header template for output PHP file
-     * @var string 
      */
     public $templateHeader = "<?php
 /*==============================================================================
@@ -87,8 +87,8 @@ class Autogen {
  */\n";
     
     /**
+     * @var_ <i>string</i>
      * Template for some system comments
-     * @var string
      */
     public $templateComments =" *
  * PHPUnit tests for:
@@ -103,8 +103,8 @@ class Autogen {
 ";
     
     /**
+     * @var_ <i>string</i> 
      * Class body template for output PHP file
-     * @var string 
      */
     public $templateClass = "\n
 /**
@@ -115,8 +115,8 @@ class [TEST_CLASS_NAME] extends PHPUnit_Framework_TestCase
 }\n";
     
     /**
+     * @var_ <i>string</i> 
      * Class method/function body template for output PHP file
-     * @var string 
      */
     public $templateTest ='
    /**
@@ -134,68 +134,68 @@ class [TEST_CLASS_NAME] extends PHPUnit_Framework_TestCase
 //------------------------------------------------------------------------------
     
     /**
+     * @var_ <i>array</i> 
      * Source paths to find all source files
-     * @var array 
      */
     public $sourcePaths    = [ "./" ];
     
     /**
+     * @var_ <i>array</i> 
      * Array of regexp patterns to find only necessary file names
-     * @var array 
      */
     public $sourcePatterns = [ '\.php$' ];   
     
     /**
+     * @var_ <i>array</i> 
      * Array of regexp patterns to exclude some file names
-     * @var array 
      */
     public $sourceExclude  = [ '^_', 'Test\.php$' ];
     
     /**
+     * @var_ <i>boolean</i> 
      * Searching for source files recursively
-     * @var boolean 
      */
     public $sourceRecursive = true;
     
     /**
+     * @var_ <i>string</i> 
      * Root of destination path
-     * @var string 
      */
     public $destinationRoot = "./tests";
     
     /**
+     * @var_ <i>boolean</i> 
      * Use relative path of source file in "include_once" directive
-     * @var boolean 
      */
     public $includeRelativePath = true;
     
     /**
+     * @var_ <i>boolean</i> 
      * Create output sub directories
-     * @var boolean 
      */
     public $destinationTree = true;
     
     /**
+     * @var_ <i>string</i> 
      * Template for file name of test
-     * @var string 
      */
     public $testFileName    = "[NAME]Test.php";
     
     /**
+     * @var_ <i>string</i> 
      * Run file name
-     * @var string 
      */
     public $runFileName   = "run.sh";
     
     /**
+     * @var_ <i>string</i>
      * PHPUnit exec file
-     * @var string
      */
     public $phpUnitFile     = "phpunit"; ///usr/local/bin/phpunit
     
     /**
+     * @var_ <i>string</i> 
      * Template for output run file
-     * @var string 
      */
     public $runFileHeaderTemplate = "#!/bin/sh
 echo
@@ -210,8 +210,8 @@ cd [RUN_DIR]
 ";
     
     /**
+     * @var_ <i>string</i>
      * Template for output run file line
-     * @var string
      */
     public $runFileLineTemplate = '
 echo ______________________________________________________________________________
@@ -221,8 +221,8 @@ echo
 [PHPUNIT] --log-junit [TEST_LOG].xml [TEST_NAME] [TEST_FILE]';    
     
     /**
+     * @var_ <i>string</i>
      * Include 'requrie_once' directive in out test file
-     * @var string
      */
     public $includeAutoloaderFileName = "";
     
@@ -254,7 +254,7 @@ echo
      * To clear any symbols befor "$paramName" (such as '&' or 'typeOfParameter')
      * 
      * @param  string $stringParams String of function parameters.
-     * @return string               Stripped string.
+     * @return <i>string</i>        Stripped string.
      */
     public function stripFunctionParams($stringParams) {
         $params = explode(',', $stringParams);
@@ -272,7 +272,7 @@ echo
      * @param  string $sourceFileName (Option) needed to create "require" directive.
      * @param  string $resultFileName (Option) needed to create class name for stanalong functions and to create "require" directive with relative path.
      * @param  string $currentContent (Option) needed to insert result code inside an existing content.
-     * @return string                 Result code of PHP-file contains tests.
+     * @return <i>string</i>          Result code of PHP-file contains tests.
      */
     public function generateCode( $sourceCode, $sourceFileName="", $resultFileName="NonameClass", $currentContent=NULL ) {
         
@@ -455,7 +455,7 @@ echo
      * @param  string $findPattern    Regular expression to find duplicates of $newText and to cancel insertion.
      *                                If $findPattern=NULL $newText will inserted without check and duplicate may occur. 
      * @param  array  $afterKeys      The $newText will inserted after first found "key pattern" from $afterKeys patterns.
-     * @return string                 Result text.
+     * @return <i>string</i>          Result text.
      */    
     public static function placeAfter( $sourceText, $newText, $findPattern=NULL, $afterKeys=array('<\?php') ) {
         //--- if $newText is exists - nothing to do!
@@ -520,8 +520,8 @@ echo
     }
     
     /**
+     * @var_ <i>hash</i>
      * Hash array of result
-     * @var hash 
      */
     private $resultData;
     
@@ -530,7 +530,7 @@ echo
      * 
      * @param  hash         $config Config params (class properties values)
      * @throws Exception
-     * @return hash                 An array of generated files. (Array structure see in @ref getResult)
+     * @return <i>array</i>         An array of generated files. (Array structure see in @ref getResult)
      * @see    getResult
      */
     public function generate ( $config=NULL ) {
@@ -597,13 +597,13 @@ echo
     /**
      * Returns a result of generation
      * 
-     * @return hash Array of structure:
-     * @code
+     * @return <i>array</i> Array of structure:
+     * ~~~
      * array (
      *      'destinations' => array( 'filename' => 'test|run', ... )
      *      'errors'       => array( 'filename' => 'error message', ... )
      * )
-     * @endcode
+     * ~~~
      */
     public function getResult() {
         return $this->resultData;
@@ -614,7 +614,7 @@ echo
      * 
      * @param  array  $destinations     List of destination file names.
      * @param  string $destinationRoot  Root path for destinations.
-     * @return string                   A source code (text) of run-file.
+     * @return <i>string</i>            A source code (text) of run-file.
      */
     public function generateRunFile($destinations, $destinationRoot) {
         if (!is_array($destinations)) {

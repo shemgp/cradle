@@ -19,15 +19,15 @@ namespace digger\cradle\application;
 class Language {
     
     /** 
+     * @var_ <i>string</i>
      * Cookie language key (to determine user's selection) 
-     * @var string
      */
     public static $cookieLanguageKey = 'language';
 
     /** 
+     * @var_ <i>array</i>
      * List of acceptable languages. 
      * The first in list is the default.
-     * @var array
      */
     public static $languages = [
         "en", // en-US
@@ -35,18 +35,18 @@ class Language {
     ];    
 
     /**
+     * @var_ <i>boolean</i> 
      * Short form of language code. 
      * @see getLanguage
      * 
      * TRUE is 2-symbols form (en|ru|...).
      * FALSE is 5-symbols form (en-US|ru-RU|...).
-     * @var boolean 
      */
     public static $shortForm = false;
 
     /**
+     * @var_ <i>string</i> 
      * Language code delimiter
-     * @var string 
      */
     public static $delimiter = '-';
     
@@ -67,8 +67,8 @@ class Language {
     /**
      * Converts the input language code to the standard form (language-COUNTRY)
      * 
-     * @param  string $lang Input language code - two letters or languge pair ( en | en-us | en_US | ru | ru-RU | ... )
-     * @return string Language output code: language-COUNTRY ( en-US | ru-RU | ... )
+     * @param  string $lang  Input language code - two letters or languge pair ( en | en-us | en_US | ru | ru-RU | ... )
+     * @return <i>string</i> Language output code: language-COUNTRY ( en-US | ru-RU | ... )
      */
     public static function getLanguageCode($lang) {
         if (strlen($lang) < 3) {
@@ -86,8 +86,8 @@ class Language {
     /**
      * Checks is the input language present in the acceptable list (in array $languages).
      * 
-     * @param  string         $inputLang Input language code - two letters or languge pair ( en | en-us | en_US | ru | ru-RU | ... )
-     * @return boolean|string            FALSE | "standard language code"
+     * @param  string                $inputLang Input language code - two letters or languge pair ( en | en-us | en_US | ru | ru-RU | ... )
+     * @return <i>boolean|string</i>            FALSE | "standard language code"
      */
     public static function isLanguageAcceptable($inputLang) {
         //--- Convert language to standard form:
@@ -110,7 +110,7 @@ class Language {
      * Set current language and locale
      * 
      * @param  string $inputLang Value of HTML tag "lang" (en|ru|en-US|ru-RU|...)
-     * @return string            Locale code on success
+     * @return <i>string</i>     Locale code on success
      */
     public static function setLanguage($inputLang) { 
         //--- Convert lang to standard form:
@@ -131,7 +131,7 @@ class Language {
     /**
      * Returns language list accepted by user
      * 
-     * @return array  language list accepted by user
+     * @return <i>array</i>  language list accepted by user
      */
     public static function getUserAcceptLanguages() {
         $lang_list = explode(",", strtolower($_SERVER['HTTP_ACCEPT_LANGUAGE']));
@@ -148,7 +148,7 @@ class Language {
     /**
      * Returns user's most accepted language
      * 
-     * @return string 2-symbols code of user's most accepted language
+     * @return <i>string</i> 2-symbols code of user's most accepted language
      */
     public static function getUserAcceptLanguage() {
         $lang = array_shift(array_keys(self::getUserAcceptLanguages()));
@@ -158,14 +158,14 @@ class Language {
     /**
      * Returns the code of current language (selected by user or default)
      * 
-     * @param $shortForm            boolean TRUE is 2-symbols form (en|ru|...).
+     * @param boolean $shortForm            TRUE is 2-symbols form (en|ru|...).
      *                                      FALSE is 5-symbols form (en-US|ru-RU|...).
-     * @param $acceptableLanguages  array   List of acceptable languages. 
+     * @param array   $acceptableLanguages  List of acceptable languages. 
      *                                      The first in list is the default.
      * 
-     * @return string The code of current language.
-     *                Can be 2-symbols form (en|ru|...) or 5-symbols form (en-US|ru-RU|...) depending on the $shortForm value.
-     * @see shortForm 
+     * @return <i>string</i> The code of current language.
+     *                       Can be 2-symbols form (en|ru|...) or 5-symbols form (en-US|ru-RU|...) depending on the $shortForm value.
+     * @see $shortForm 
      */
     public static function getLanguage($shortForm = null, $acceptableLanguages = null) {
         if ($shortForm === null) { 
@@ -193,7 +193,7 @@ class Language {
     /**
      * Returns current system locale.
      * 
-     * @return string
+     * @return <i>string</i> The current system locale
      */
     public static function getLocale() {
         return setlocale(LC_ALL, 0);
@@ -202,7 +202,7 @@ class Language {
     /**
      * Returns locales list of current server.
      * 
-     * @return array Locales list of current server
+     * @return <i>array</i> Locales list of current server
      */
     public static function getLocales($filter = null) {
         if ($filter) { 

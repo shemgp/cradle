@@ -26,9 +26,9 @@ class Html {
      * @param  string   $listType        (Option) Type of main tag (UL | OL)
      * @param  array    $arrayAttributes Array of attributes of main tag: ['class' => '...', 'id' => ... ]
      * @param  function $callback        Callback function (on befor create item) @see getElement
-     * @return string                    HTML code.
+     * @return <i>string</i>             HTML code.
      * 
-     * Example:
+     * <h3>Example:</h3>
      * ~~~
      * echo Html::arrayToList(['a'=>['b'=>['c'=>'value']]], 'ul', ['id'=>'myID1', 'class'=>'myclass']);
      * 
@@ -72,9 +72,9 @@ class Html {
      * @param array    $arrayAttributes Array of tag attributes: ['class' => '...', 'id' => ... ]
      * @param function $callback        This function will be called with given parameters:
      *                                  $tag, $body, $arrayAttributes that can be changed before creating the element.
-     * @return string                   HTML code.
+     * @return <i>string</i>            HTML code.
      * 
-     * Example:
+     * <h3>Example:</h3>
      * ~~~
      * echo Html::getElement('a', 'my link', ['href' => 'http://somewere'], function(&$tag, &$body, &$attr){ $body .= '... some body ...'; $attr['class']='new class'; });
      * 

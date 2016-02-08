@@ -15,8 +15,8 @@ namespace digger\cradle\common;
  * @author Digger <mrdigger@sad-systems.ru>
  * @copyright (c) 2015, SAD-Systems
  * 
- * @todo How to use:
- * @code
+ * <h3>Example of usage:</h3>
+ * ~~~
  * // Your application structure:
  * //
  * // /application_root/
@@ -47,19 +47,19 @@ namespace digger\cradle\common;
  * // Both (PSR-0 and PSR-4):
  * digger\cradle\common\ClassLoader::register('/application_root', ['lib', "vendor\\package\\" => 'src/']);
  * 
- * @endcode
+ * ~~~
  */
 class ClassLoader {
 
     /**
+     * @var_ <i>string</i> 
      * Root path to search classes
-     * @var string 
      */
     public static $rootPath = null;
 
     /**
+     * @var_ <i>array</i>
      * Search list to find classes in specific directories
-     * @var type array
      */
     public  static $searchList = ['lib', 'controllers', 'models'];
     
@@ -84,7 +84,7 @@ class ClassLoader {
      * Function to load a class
      * 
      * @param  string  $class   Class name for class to load.
-     * @return boolean          TRUE on success.
+     * @return <i>boolean</i>   TRUE on success.
      */
     public static function load( $class )
     {

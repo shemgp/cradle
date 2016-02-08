@@ -25,84 +25,85 @@ use Exception;
  * 
  * <h3>Example of usage:</h3>
  * ~~~
-   <?php
- 
-    //--- 1. Short usage:
-
-    $r = (new Telnet([ 'host' => "host", 'user' => "user", 'password' => "password" ]))->exec("show clock");
-    print_r( $r );
-     
-    //--- 2. Normal usage:
- 
-    $t = new Telnet([
-        'host'     => "host", 
-        'user'     => "username",
-        'password' => "password",
-        'debug'    => "debug.dat", // to file (option)
-    ]);
- 
-    $commands = "show clock";                           // Single  command as a string
-    $commands = "show clock\nterminal length 0";        // Several commands separated by "\n"
-    $commands = ["show clock"];                         // Single  command as an array
-    $commands = ["terminal length 0", "show clock"];    // Several commands as an array
-
-    $r = $t->exec($commands);
-    print_r( $r );
-    if ($r === false) {
-        echo "Error: " . implode(" : ", $t->getLastError()) . "\n";
-        print_r($t->getErrors());
-    }
-
-    //--- 3. Advanced usage:
-
-    $t = new Telnet([
-        'host'     => "host", 
-        'user'     => "username",
-        'password' => "password",
-        'timeout'  => 30,         // default timeout is 30 sec
-        'debug'    => 2,          // to STDIN (echo)
-        'errorSilent' => false,   // enable exceptions
-    ]);
-
-    $commands = ["terminal length 0", "show clock"];
-
-    if (!is_array($commands)) { $commands = [$cmd]; }
-    try {
-        foreach ($commands as $command) {
-            echo "command : $command\n";
-            $r = $t->exec($command, 20); // every command with own timeout 20 sec 
-            print_r($r);
-        }
-    } catch (Exception $e) {
-        echo "Exception: " . $e->getMessage() . " Code: " . $e->getCode() . "\n";
-        echo "Error: " . implode(" : ", $t->getLastError()) . "\n";
-        print_r($t->getErrors());
-    }
- 
-    $t->close();
-  
-    //--- 4. Several targets:
-
-    $config   = ['user' => "user", 'password' => "password", 'errorSilent' => false, 'debug' => 2];
-    $hosts    = ['host1', 'host2', 'host3'];
-    $commands = ['terminal length 0', 'show clock'];
-
-    $t = new Telnet($config);
-
-    foreach ($hosts as $host) {
-        try {
-            echo "Host: $host\n";
-            $t->open($host);
-            $r = $t->exec($commands); 
-            print_r($r);
-        } catch (Exception $e) {
-            echo "Exception: " . $e->getMessage() . " Code: " . $e->getCode() . "\n";
-            echo "Error: " . implode(" : ", $t->getLastError()) . "\n";
-            print_r($t->getErrors());
-        }
-    }
-    
-    $t->close();
+ * <?php
+ *
+ *   //--- 1. Short usage:
+ *
+ *   $r = (new Telnet([ 'host' => "host", 'user' => "user", 'password' => "password" ]))->exec("show clock");
+ *   print_r( $r );
+ *    
+ *   //--- 2. Normal usage:
+ *
+ *   $t = new Telnet([
+ *       'host'     => "host", 
+ *       'user'     => "username",
+ *       'password' => "password",
+ *       'debug'    => "debug.dat", // to file (option)
+ *   ]);
+ *
+ *   $commands = "show clock";                           // Single  command as a string
+ *   $commands = "show clock\nterminal length 0";        // Several commands separated by "\n"
+ *   $commands = ["show clock"];                         // Single  command as an array
+ *   $commands = ["terminal length 0", "show clock"];    // Several commands as an array
+ *
+ *   $r = $t->exec($commands);
+ *   print_r( $r );
+ *   if ($r === false) {
+ *       echo "Error: " . implode(" : ", $t->getLastError()) . "\n";
+ *       print_r($t->getErrors());
+ *   }
+ *
+ *   //--- 3. Advanced usage:
+ *
+ *   $t = new Telnet([
+ *       'host'     => "host", 
+ *       'user'     => "username",
+ *       'password' => "password",
+ *       'timeout'  => 30,         // default timeout is 30 sec
+ *       'debug'    => 2,          // to STDIN (echo)
+ *       'errorSilent' => false,   // enable exceptions
+ *   ]);
+ *
+ *   $commands = ["terminal length 0", "show clock"];
+ *
+ *   if (!is_array($commands)) { $commands = [$cmd]; }
+ *   try {
+ *       foreach ($commands as $command) {
+ *           echo "command : $command\n";
+ *           $r = $t->exec($command, 20); // every command with own timeout 20 sec 
+ *           print_r($r);
+ *       }
+ *   } catch (Exception $e) {
+ *       echo "Exception: " . $e->getMessage() . " Code: " . $e->getCode() . "\n";
+ *       echo "Error: " . implode(" : ", $t->getLastError()) . "\n";
+ *       print_r($t->getErrors());
+ *   }
+ *
+ *   $t->close();
+ * 
+ *   //--- 4. Several targets:
+ *
+ *   $config   = ['user' => "user", 'password' => "password", 'errorSilent' => false, 'debug' => 2];
+ *   $hosts    = ['host1', 'host2', 'host3'];
+ *   $commands = ['terminal length 0', 'show clock'];
+ *
+ *   $t = new Telnet($config);
+ *
+ *   foreach ($hosts as $host) {
+ *       try {
+ *           echo "Host: $host\n";
+ *           $t->open($host);
+ *           $r = $t->exec($commands); 
+ *           print_r($r);
+ *       } catch (Exception $e) {
+ *           echo "Exception: " . $e->getMessage() . " Code: " . $e->getCode() . "\n";
+ *           echo "Error: " . implode(" : ", $t->getLastError()) . "\n";
+ *           print_r($t->getErrors());
+ *       }
+ *   }
+ *   
+ *   $t->close();
+ * 
  * ~~~
  */
 class Telnet {

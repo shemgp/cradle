@@ -22,8 +22,8 @@ use digger\cradle\common\Html;
  * @copyright (c) 2015, SAD-Systems
  * 
  * 
- * @todo How to use:
- * @code
+ * <h3>Example of usage:</h3>
+ * ~~~
  * require_once 'autoload.php';
  * 
  * use digger\cradle\tests\PutResults;
@@ -33,7 +33,7 @@ use digger\cradle\common\Html;
  * echo $results->toHtml();        //<-- out HTML code
  * echo $results->getJsContent();  //<-- out some Javascript code (require JQuery)
  * 
- * @endcode
+ * ~~~
  * 
  * @note
  * This class requires Javascript libs:
@@ -74,26 +74,26 @@ use digger\cradle\common\Html;
 class PutResults {
     
     /**
+     * @var_ <i>string</i>
      * CSS class name for main container (div)
-     * @var string
      */
     public $cssContainerDivClass = "testcases";
     
     /**
+     * @var_ <i>string</i>
      * Name of attribute of HTML li tag if test is ok
-     * @var string
      */
     public $cssStatusOk      = "status-ok";
 
     /**
+     * @var_ <i>string</i>
      * Name of attribute of HTML li tag if test is failed
-     * @var string
      */
     public $cssStatusFail    = "status-fail";
 
     /**
+     * @var_ <i>string</i>
      * Name of attribute of HTML li tag if test have error
-     * @var string
      */
     public $cssStatusError   = "status-error";
     
@@ -105,14 +105,14 @@ class PutResults {
 
 
     /**
+     * @var_ <i>string</i> 
      * Path to PHPUnit results xml-files
-     * @var string 
      */
     private $targetPath = NULL;
     
     /**
+     * @var_ <i>array</i> 
      * Test suites structure
-     * @var array 
      */
     private $testSuites = NULL;
     
@@ -131,7 +131,7 @@ class PutResults {
      * Set real path to PHPUnit results xml-files.
      * 
      * @param  string $targetPath   Path to PHPUnit results xml-files.
-     * @return string               Real target path.
+     * @return <i>string</i>        Real target path.
      */
     public function setTargetPath( $targetPath="" ) {
         $this->targetPath = realpath($targetPath);
@@ -143,7 +143,7 @@ class PutResults {
      * (Or set new target path)
      * 
      * @param  string $targetPath   (Option) new path to PHPUnit results xml-files to set instead.
-     * @return string               Real target path.
+     * @return <i>string</i>        Real target path.
      */
     public function getTargetPath( $targetPath=NULL ) {
         if ($targetPath === NULL) {
@@ -160,8 +160,8 @@ class PutResults {
      * To find all existing PHPUnit results xml-files.
      * 
      * @param  string $targetPath   (Option) new path to PHPUnit results xml-files. 
-     * @return hash                 Array of testSuites structure:
-     * @code
+     * @return <i>array</i>         Array of testSuites structure:
+     * ~~~
      * Array (
             [someFile.xml] => Array
                 (
@@ -195,7 +195,7 @@ class PutResults {
             [someFile2.xml] => Array( ... )
             ...
      
-     * @endcode
+     * ~~~
      */
     public function findAll( $targetPath=NULL ) {
         //--- Find all xml files of results:
@@ -220,8 +220,8 @@ class PutResults {
     /**
      * Represents testSuites structure in HTML format.
      * 
-     * @return string HTML code:
-     * @code
+     * @return <i>string</i> HTML code:
+     * ~~~
      * 
      * <div class='$cssContainerDivClass'>
      *  ...
@@ -237,7 +237,7 @@ class PutResults {
      *  </ul>
      * </div>
      * 
-     * @endcode
+     * ~~~
      */
     public function toHtml() {
         if (!is_array($this->testSuites)) { 
@@ -283,7 +283,7 @@ class PutResults {
     
     /**
      * @param  hash      $testcase  Testcase structure.
-     * @return string               HTML code.
+     * @return <i>string</i>        HTML code.
      */
     private function toHtmlTestcase ($testcase) {
         $attr    = $testcase["@attributes"];
@@ -311,7 +311,7 @@ class PutResults {
     /**
      * Get Javascript content additions (Option)
      * 
-     * @return string Javascript code. 
+     * @return <i>string</i> Javascript code. 
      */
     function getJsContent() {
         return '<script> '

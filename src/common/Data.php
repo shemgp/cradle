@@ -34,7 +34,7 @@ class Data {
      *   its value will be saved as tag's value).<br>
      * - =FALSE, XML-tag's attributes will be stored as \@attributes.
      * 
-     * @return hash   Array or FALSE, if file $fileName not found.
+     * @return <i>hash</i>   Array or FALSE, if file $fileName not found.
      */
     public static function load( $fileName, $stripXmlAttributes=true )
     {
@@ -66,8 +66,8 @@ class Data {
     /**
      * Strip Attributes of array 
      * 
-     * @param hash_array $hash
-     * @return hash_array
+     * @param array $hash
+     * @return <i>array</i>
      */
     private static function stripXmlAttributes($hash) {
         if (is_array($hash)) { 
@@ -86,11 +86,11 @@ class Data {
      * @param  object        $destination Link to destination class or an array to be set.
      * @param  string|hash   $source      "Config file name" or hash array of property values to set 
      *                                    to destination.
-     * @param  boolean       $strict      =TRUE  - non-existent properties will be ignored.
+     * @param  boolean       $strict      =TRUE  - non-existent properties will be ignored; <br>
      *                                    =FALSE - non-existent properties will be created and set.
      * @param  boolean       $merge       =TRUE  - if class property is an array new and old values 
      *                                    will be merged (recursively).
-     * @return boolean                    TRUE if properties of class was successfully set.
+     * @return <i>boolean</i>             TRUE if properties of class was successfully set.
      */
     public static function set ( &$destination, $source, $strict=false, $merge=false ) {
         //--- Check:
@@ -123,8 +123,8 @@ class Data {
      * 
      * @param array   $destination  Destination array
      * @param array   $source       Source array
-     * @param boolean $strict      =TRUE  - non-existent properties will be ignored;
-     *                                    =FALSE - non-existent properties will be created and set.
+     * @param boolean $strict      =TRUE  - non-existent properties will be ignored; <br>
+     *                             =FALSE - non-existent properties will be created and set.
      * @param boolean $merge       =TRUE  - if class property is an array new and old values 
      *                                    will be merged (recursively)
      */

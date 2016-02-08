@@ -54,7 +54,6 @@ class Creater {
      *   'appInfo' => [ an optional array of any extra params ]     
      * ]
      * ~~~
-     * @return null
      */
     public static function createApplication($config) {
         //--- Check config:

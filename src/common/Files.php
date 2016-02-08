@@ -27,10 +27,10 @@ class Files {
      * @param  string  $mask        File mask. <i>Note: ::glob('/my/path' ,'{,.}*', GLOB_BRACE, true) - will output system hidden files.</i>
      * @param  int     $flags       PHP glob flags.
      * @param  boolean $recursive   Search files recursively.
-     * @return array                An array containing the matched files/directories, an empty array if no file matched or FALSE on error. (Such as php glob).
+     * @return <i>array</i>         An array containing the matched files/directories, an empty array if no file matched or FALSE on error. (Such as php glob).
      * 
-     * Example:
-     * @code
+     * <h3>Example of usage:</h3>
+     * ~~~
      * 
      * print_r( Files::glob("/some/path") );
      * 
@@ -42,7 +42,7 @@ class Files {
      *      [1] => "/some/path/file2",
      *      ...
      * )
-     * @endcode
+     * ~~~
      */
     public static function glob( $path, $mask="*", $flags=NULL, $recursive=false ) {
         if (($files = glob($path . "/" . $mask, $flags)) === false) { 
@@ -74,17 +74,17 @@ class Files {
      *                                       Default = NULL - no files to exclusion.
      * @param  boolean      $recursive       =TRUE - find files in sub directories. 
      *                                       Default = TRUE.
-     * @return array                         A hash array of found files. Hash structure:
-     * @code
+     * @return <i>array</i>                  A hash array of found files. Hash structure:
+     * ~~~
      *  array( 
      *      "/absolute/file/name1" => "/base/path" 
      *      "/absolute/file/name2" => "/base/path" 
      *      ...
      * )
-     * @endcode
+     * ~~~
      * 
-     * Exapmle:
-     * @code
+     * <h3>Exapmle:</h3>
+     * ~~~
       
        print_r( Files::globFiles('/base/path/', '\.php$') );
 
@@ -99,7 +99,7 @@ class Files {
             '/base/path/folder1/subfolder1/file1_in_subfolder1.php' => '/base/path',
        )
 
-     * @endcode
+     * ~~~
      */
     public static function globFiles( $paths=array(''), $filePatterns=array(''), $excludePatterns=NULL, $recursive=true ) {
         //--- Convert $paths to array:
@@ -148,8 +148,8 @@ class Files {
      * 
      * @param string $targetPath    Source directory (absolute path).
      * @param string $currentPath   Current (or another) directory (absolute path).
-     * @return hash                 A hash array structure: 
-     * @code
+     * @return <i>array</i>         A hash array structure: 
+     * ~~~
      * array
      * (
      *  "common"   => "common base part of $targetPath and $currentPath", 
@@ -158,10 +158,10 @@ class Files {
      * );  
      * 
      * Full path to target = "current" + "relative"
-     * @endcode
+     * ~~~
      * 
-     * Example:
-     * @code
+     * <h3>Example:</h3>
+     * ~~~
      * 
      * getRelativePath ("/var/www/doc_root/path/to/site1", "/var/www/doc_root/otherpath/to/site2")
      * 
@@ -174,7 +174,7 @@ class Files {
      * 
      * Full relative path from current to target will be:  /var/www/doc_root/otherpath/to/site2/../../../path/to/site1
      * 
-     * @endcode
+     * ~~~
      */
     public static function getRelativePath ($targetPath, $currentPath=NULL) {
         if ($currentPath === NULL) {
@@ -211,10 +211,12 @@ class Files {
      * @param  hash    $arraySources    Hash array of sources returned by @ref globFiles method.
      * @param  boolean $stripBase       (Option) =TRUE - creates relative file path structure.
      *                                           =FALSE - creates absolute file path structure.
-     * @return boolean | array          A hash array represents a file tree structure.
+     * @return <i>boolean|array</i>     A hash array represents a file tree structure.
      * 
-     * Exapmle:
-     * @code
+     * @see    globFiles
+     * 
+     * <h3>Exapmle:</h3>
+     * ~~~
     // $files = Files::globFiles('/base/path/', '\.php$');
        $files = array(
        '/base/path/file1.php' => '/base/path',
@@ -246,8 +248,7 @@ class Files {
 
         )
       
-     * @endcode
-     * @see    globFiles
+     * ~~~
      */
     public static function getFilesTree ( $arraySources, $stripBase=true ) {
         //--- $arraySources mast be an array:
