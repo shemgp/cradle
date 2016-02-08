@@ -191,7 +191,7 @@ class [TEST_CLASS_NAME] extends PHPUnit_Framework_TestCase
      * @var_ <i>string</i>
      * PHPUnit exec file
      */
-    public $phpUnitFile     = "phpunit"; ///usr/local/bin/phpunit
+    public $phpUnitFile     = "phpunit"; //  /usr/local/bin/phpunit
     
     /**
      * @var_ <i>string</i> 
