@@ -22,14 +22,8 @@ class Basic {
     /**
      * To replace keys in the text template by values.
      * 
-     * @param string $templateText      Template text.  
-     * @param hash   $hashReplacements  Hash array of replacements.
-     * @param string $leftQualifier     Left  qualifier (by default = '[').
-     * @param string $rightQualifier    Right qualifier (by default = ']').
-     * @return <i>string</i>            Template text with replacements.
-     * 
-     * <h3>Example:</h3>
-     * ~~~
+     * Example:
+     * @code
      * 
      * $text         = "some text with some [KEY1] and [KEY2] ...";
      * $replacements = array("[KEY1]" => "Value1", "[KEY2]" => "Value2");
@@ -38,7 +32,13 @@ class Basic {
      * //-------------
      * // Will output: some text with some Value1 and Value2 ..
      * 
-     * ~~~
+     * @endcode
+     * 
+     * @param string $templateText      Template text.  
+     * @param hash   $hashReplacements  Hash array of replacements.
+     * @param string $leftQualifier     Left  qualifier (by default = '[').
+     * @param string $rightQualifier    Right qualifier (by default = ']').
+     * @return string                   Template text with replacements.
      */
     public static function replace( $templateText, $hashReplacements, $leftQualifier="[", $rightQualifier="]" ) {
         if (is_array($hashReplacements))
@@ -50,13 +50,8 @@ class Basic {
     /**
      * Checks if a value matches any of patterns
      * 
-     * @param  string           $value          Subject for matching.
-     * @param  array            $patternList    Array of regular expressions (patterns).
-     * @return <i>boolean|string</i>  TRUE (or pattern) if specified value matches one of patterns from list.
-     *                                FALSE if no matches.
-     * 
-     * <h3>Example:</h3>
-     * ~~~
+     * Example:
+     * @code
      * 
      * Basic::inPatterns( "someString", array("^some", "ing$", "\.php$") );
      * 
@@ -68,7 +63,12 @@ class Basic {
      * //-------------
      * // Will return: "data"
      * 
-     * ~~~
+     * @endcode
+     * 
+     * @param  string           $value          Subject for matching.
+     * @param  array            $patternList    Array of regular expressions (patterns).
+     * @return boolean | string TRUE (or pattern) if specified value matches one of patterns from list.
+     *                          FALSE if no matches.
      */
     public static function inPatterns ( $value, $patternList, $returnPattern=false ) {
         if (is_array($patternList)) {
@@ -93,9 +93,9 @@ class Basic {
      * @param  string $basePath     (Optional) 
      * @param  string $keyPrefix    (Optional) Prefix for key  (for example: '[' )
      * @param  string $keyPostfix   (Optional) Postfix for key (for example: ']' )
-     * @return <i>array</i>  two-dimensional array
+     * @return array  two-dimensional array
      * 
-     * <h3>Example:</h3>
+     * Example:
      * ~~~
      * $inputArray = [
      *      'a' => [
@@ -140,22 +140,24 @@ class Basic {
            $new_array = $array; 
         }
     return $new_array;
-    }
+    }  
     
     /**
-     * To initialize some class by configuration array
+     * To initialize some class by configuration array. <br>
+     * Only the public methods will be initialized.
      * 
      * @param class $class  Some class
      * @param array $config Configuration array
      */
     public static function initClass($class, $config = null) {
         if (is_array($config)) {
+            $publicProperties = array_keys(get_class_vars(get_class($class)));
             foreach ($config as $key => $value) {
-                if (property_exists($class, $key)) { 
+                if (in_array($key, $publicProperties)) {
+                //if (property_exists($class, $key)) { 
                     $class->$key = $value;
                 }
             }
         }        
     }
-    
 }

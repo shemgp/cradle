@@ -8,6 +8,8 @@
 namespace digger\cradle\network;
 
 use digger\cradle\common\Basic;
+use digger\cradle\common\Logger;
+use digger\cradle\common\Debug;
 use Exception;
 
 /**
@@ -152,7 +154,7 @@ class Telnet {
     public $errorSilent = true; // no exception
     
     /**
-     * @var_ <i>mixed</i> Defines a debug target.  <br>
+     * @var_ <i>mixed</i> Defines a debug messages destination.  <br>
      *  Possible values:                    <br>
      *      false    - no debug;            <br>
      *      1        - debug to buffer;     <br>
@@ -161,6 +163,17 @@ class Telnet {
      */
     public $debug           = 1; // debug to buffer
        
+    /**
+     * @var_ <i>mixed</i> Defines a error mesages destination.  <br>
+     *  Possible values:                    <br>
+     *      false    - no debug;            <br>
+     *      1        - debug to buffer;     <br>
+     *      2        - debug to STDIN;      <br>
+     *      filename - debug to file;
+     */
+    public $error           = 1; // errors to buffer
+
+
     //---------------------------------
     // Terminal parameters
     //---------------------------------
@@ -257,28 +270,30 @@ class Telnet {
         
         //--- Check the host:
         if (!$this->host) { 
-            $this->error("Host property is empty", __FUNCTION__, self::ERR_HOST_IS_EMPTY);
+            $this->error(self::ERR_HOST_IS_EMPTY, __FUNCTION__);
             return false; 
         }
+        $this->debug(date("Y.m.d H:i:s"), __FUNCTION__);
         
         //--- Is host alive?
         if (!$this->isAlive()) {
-            $this->error("Host [" . $this->host. "] is unreachable", __FUNCTION__, self::ERR_HOST_IS_UNREACHABLE);
+            $this->error(self::ERR_HOST_IS_UNREACHABLE, __FUNCTION__, $this->host);
             return false;
         }
+        $this->debug("Host [" . $this->host . "] is alive", __FUNCTION__);
         
         //--- Craete Socket (TCP):
         if (!$this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) {
-            $this->error("Socket:", __FUNCTION__, self::ERR_SOCKET, $this->socket);
+            $this->error(self::ERR_SOCKET, __FUNCTION__, $this->socket);
             return false; 
         }
         
         //--- Connect to host:
         if (! socket_connect($this->socket, $this->host, $this->port)) {
-            $this->error("Connect:", __FUNCTION__, self::ERR_SOCKET, socket_last_error());
+            $this->error(self::ERR_SOCKET, __FUNCTION__, socket_last_error());
             return false; 
         }
-        $this->debug("Connected [" . $this->host . ":" . $this->port . "], socket [" . $this->socket . "]", __FUNCTION__);
+        $this->debug("Connected to [" . $this->host . ":" . $this->port . "], socket [" . $this->socket . "]", __FUNCTION__);
         
         //--- First handshake:
         $this->handshake();
@@ -350,7 +365,7 @@ class Telnet {
      * @return <i>array</i> An array of error data (text message, code, target, ...)
      */
     public function getLastError() {
-        return count($this->errorBuffer)>0 ? $this->errorBuffer[count($this->errorBuffer)-1] : null;
+        return $this->errorLogger->getLastMessage();
     }
 
     /**
@@ -358,7 +373,7 @@ class Telnet {
      * @return <i>array</i> An array of error buffer.
      */
     public function getErrors() {
-        return $this->errorBuffer;
+        return $this->errorLogger->getMessages();
     }
     
     /**
@@ -366,7 +381,7 @@ class Telnet {
      * @return <i>array</i> An array of debug buffer.
      */
     public function getDebug() {
-        return $this->debugBuffer;
+        return $this->debugLogger->getMessages();
     }
 
     /**
@@ -406,12 +421,16 @@ class Telnet {
     private $socket;
     
     private $isAuthenticated = false;
-    
-    private $errorBuffer = [];
-    private $debugBuffer = [];
+   
     private $inputBuffer;
     
     private $readyKey;
+    
+    //--- Loggers:
+    
+    protected $debugLogger;
+    protected $errorLogger;
+
 
     //--------------------------------------------------------------------------
     
@@ -421,8 +440,13 @@ class Telnet {
     private function init($config) {
         //--- Init the class:
         Basic::initClass($this, $config);
-        //--- Create file for debug:
-    if (is_string($this->debug)) { file_put_contents ($this->debug, ""); }
+        //--- Create loggers:
+        if (!is_object($this->debugLogger) || isset($config['debug'])) {
+            $this->debugLogger = new Debug($this->debug);
+        }
+        if (!is_object($this->errorLogger) || isset($config['debug'])) {
+            $this->errorLogger = new Logger($this->error);
+        }
     }
     
     //--------------------------------------------------------------------------
@@ -432,16 +456,40 @@ class Telnet {
      * 
      * @throws Exception
      */
-    private function error($message, $process = "", $code = null, $extCode = null) {
-        //--- Extend the message:
-        if ($code === self::ERR_SOCKET) { $message .= ($message ? " " : "") . socket_strerror($extCode); }
+    private function error($code, $source = "", $detail = null) {
+        //--- Get a message:
+        switch ($code) {
+            case self::ERR_HOST_IS_EMPTY:
+                $message = "host [$detail] is empty";
+                break;
+            case self::ERR_HOST_IS_UNREACHABLE:
+                $message = "host [$detail] is unreacheble";
+                break;
+            case self::ERR_SOCKET:          
+                $message = "socket error: " . socket_strerror($detail);
+                break;
+            case self::ERR_AUTH_FAIL:
+                $message = "authentication failed";
+                break;
+            case self::ERR_CLOSED_BY_REMOTE:
+                $message = "connection is closed by the remote side";
+                break;
+            case self::ERR_TIMEOUT:
+                $message = "timeout";
+                break;
+            default:
+                $message = 'unknown';
+        }
         //--- Error structure:
-        $this->errorBuffer[] = [ 
-            "process" => $process, 
-            "message" => $message, 
-            "code"    => $code, 
-            "extcode" => $extCode 
+        $error = [ 
+            "source" => $source, 
+            "message"=> $message,
+            "code"   => $code,
+            "detail" => $detail, 
         ];
+        //--- Save error:
+        $this->errorLogger->save($error, $source);
+        $this->debugLogger->save("ERROR: " . $message, $source);
         //--- Throw exception if need:
         if (!$this->errorSilent) {
             throw new Exception($message, $code);
@@ -451,21 +499,16 @@ class Telnet {
     /**
      * Create a debug message
      */
-    private function debug($message, $process = "") {
+    private function debug($message, $source = "") {
+        
         if (!$this->debug) { return; }
         
-        $message = $process . " : " . $message;
-        
-        if ($this->debug === 1) {
-            //--- Log to buffer:
-            $this->debugBuffer[] = $message;
-        } else if ($this->debug === 2) {
-            //--- Log to STDIN:
-            echo $message . "\n";
-        } else if (is_string($this->debug) && is_file($this->debug)) {
-            //--- Log to file:
-            file_put_contents($this->debug, $message . "\n", FILE_APPEND);
+        if (is_array($message) && $message['0'] === 1) {
+            list($code, $bytes, $commands, $text) = $message;
+            $message = "bytes [$bytes],\n\tdata comm [" . $this->toString($commands, "comm") . "],\n\tdata text [" . $text . "]";
         }
+        
+        $this->debugLogger->save($message, $source);
     }
     
     //--------------------------------------------------------------------------
@@ -478,15 +521,14 @@ class Telnet {
      * @return boolean TRUE  if it is an error;     <br>
      *                 FALSE if it's not en error
      */
-    private function isError($e, $process) {
-        $this->debug($e->getMessage(), $process);
+    private function isError($e, $source) {
         //if ($e->getCode() === self::ERR_TIMEOUT) {
             //--- It's not an error
             //... Continue
-        //    return false;
+            //return false;
         //} 
         //--- Create an error:
-        $this->error($e->getMessage(), $process, $e->getCode());
+        $this->error($e->getCode(), $source);
         return true;
     }
     
@@ -554,7 +596,7 @@ class Telnet {
                 $this->timeout,
                 [
                     function ($answer, $m) { $this->isAuthenticated = true; },
-                    function ($answer, $m) { $this->error(preg_replace('/\s+/', " ", $answer), "device", self::ERR_AUTH_FAIL); }        
+                    function ($answer, $m) { $this->error(self::ERR_AUTH_FAIL, "device", preg_replace('/\s+/', " ", $answer)); }        
                 ]
             );
                         
@@ -563,9 +605,8 @@ class Telnet {
         }
 
         if (!$this->isAuthenticated) {
-            $this->debug("Authentication is failed. (Connection will be closed)", __FUNCTION__);
             $this->close();
-            $this->error("Authentication is failed", __FUNCTION__, self::ERR_AUTH_FAIL);
+            $this->error(self::ERR_AUTH_FAIL, __FUNCTION__);
         } else {
             $this->debug("Success", __FUNCTION__);
         }
@@ -621,7 +662,7 @@ class Telnet {
         $bytesSent = socket_send($this->socket, $data, strlen($data), 0);
         $this->debug("bytes [$bytesSent], data [" . $data . "]", __FUNCTION__);
         if ($bytesSent === false) {
-            $this->error("", __FUNCTION__, self::ERR_SOCKET, socket_last_error());
+            $this->error(self::ERR_SOCKET, __FUNCTION__, socket_last_error());
         }
     return $bytesSent;
     }
@@ -651,13 +692,12 @@ class Telnet {
             $b       = "";
             $bytes   = @socket_recv($this->socket, $b, $size, MSG_DONTWAIT); // 0=disconnected, false=no data
             $buffer .= $b;
-            $timer++; //echo $timer . ") [$bytes] [" . strlen($buffer) . "]\n";
+            $timer++;
             if ($bytes === 0) {
                 //--- Close current session:
                 $this->close();
-                $error = "socket is closed by the remote side";
-                $this->error($error, __FUNCTION__, self::ERR_CLOSED_BY_REMOTE);
-                throw new Exception($error, self::ERR_CLOSED_BY_REMOTE);
+                $this->error(self::ERR_CLOSED_BY_REMOTE, __FUNCTION__);
+                throw new Exception("socket is closed by the remote side", self::ERR_CLOSED_BY_REMOTE);
             }
             if ($bytes === false) {
                 if ($timer >= $timerMax) {
@@ -671,10 +711,10 @@ class Telnet {
         
         list($commands, $text) = $this->parseInput($buffer);
         
-        $this->debug("bytes [$bytes],\n\tdata comm [" . $this->toString($commands, "comm") . "],\n\tdata text [" . $text . "]", __FUNCTION__);
+        $this->debug([1, $bytes, $commands, $text], __FUNCTION__);
         
         if ($bytes === false) {
-            $this->error("", __FUNCTION__, self::ERR_SOCKET, socket_last_error());
+            $this->error(self::ERR_SOCKET, __FUNCTION__, socket_last_error());
             throw new Exception(socket_last_error(), self::ERR_SOCKET);
         }
         
