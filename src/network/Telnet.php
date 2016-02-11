@@ -210,10 +210,10 @@ class Telnet {
     //---------------------------------
     
     /**
-     * @var_ <i>string</i> Regular expression template to find a marker 'Ready for input'
+     * @var_ <i>string</i> Regular expression template to find a input prompt marker ('Ready for input')
      * of remote side. By default it set as: '/^[^#>\$\%]+[#>\$\%]\s*$/'
      */
-    public $readyKeyTemplate = '/^[^#>\$\%]+[#>\$\%]\s*$/'; 
+    public $inputPromptTemplate = '/^[^#>\$\%]+[#>\$\%]\s*$/'; 
     
     //---------------------------------
     // Error codes
@@ -385,11 +385,11 @@ class Telnet {
     }
 
     /**
-     * Returns a marker 'Ready for input' of remote side
+     * Returns a input prompt marker of remote side
      * @return <i>string</i> The marker
      */
-    public function getReadyKey() {
-        return $this->readyKey;
+    public function getInputPrompt() {
+        return $this->inputPrompt;
     }    
     
     /**
@@ -424,7 +424,7 @@ class Telnet {
    
     private $inputBuffer;
     
-    private $readyKey;
+    private $inputPrompt;
     
     //--- Loggers:
     
@@ -589,7 +589,7 @@ class Telnet {
             }
             $this->getAnswer(
                 [
-                    $this->readyKeyTemplate,    //--- OK
+                    $this->inputPromptTemplate,    //--- OK
                     '/(fail|invalid|error)/ims' //--- FAIL 
                 ], 
                 0, 
@@ -629,7 +629,7 @@ class Telnet {
         //--- Send the command:
         $this->send($command . "\n"); //--- Add control enter
         //--- Receive the answer:
-        $answerData = $this->getAnswer($this->readyKeyTemplate, 1, $timeout, function($ansewr, $m){ $this->readyKey = $m[0]; });
+        $answerData = $this->getAnswer($this->inputPromptTemplate, 1, $timeout, function($ansewr, $m){ $this->inputPrompt = $m[0]; });
         //--- Strip a garbage:
         if ($this->trimResponse) {
             //--- Delete command echo from begining:
@@ -639,8 +639,8 @@ class Telnet {
                     $answerData = substr($answerData, strlen($deleteSring));
                 }
             }
-            //--- Delete `readyKey` at the end:
-            if ( ($p = strrpos($answerData, $this->readyKey)) !== false ) { 
+            //--- Delete input prompt at the end:
+            if ( ($p = strrpos($answerData, $this->inputPrompt)) !== false ) { 
                 $answerData = substr($answerData, 0, $p);
             }
         }
@@ -730,8 +730,8 @@ class Telnet {
     /**
      * Advanced `read` (`read` wrapper)
      */
-    private function getAnswer($readyKeyTemplates, $analyzeMode = 0, $timeout = null, $callbackFunctions = null, $failFunction = null) {
-        if (!is_array($readyKeyTemplates)) $readyKeyTemplates = [$readyKeyTemplates];
+    private function getAnswer($inputPromptTemplates, $analyzeMode = 0, $timeout = null, $callbackFunctions = null, $failFunction = null) {
+        if (!is_array($inputPromptTemplates)) $inputPromptTemplates = [$inputPromptTemplates];
         if (!is_array($callbackFunctions)) $callbackFunctions = [$callbackFunctions];
         if (!$timeout)                     $timeout           = $this->timeout;
         $answer = "";
@@ -746,8 +746,8 @@ class Telnet {
                         $analyze = $answer;
                     }
                     //--- Parse received data:
-                    foreach ($readyKeyTemplates as $i => $readyKeyTemplate) {
-                        if (preg_match($readyKeyTemplate, $analyze, $m)) {
+                    foreach ($inputPromptTemplates as $i => $inputPromptTemplate) {
+                        if (preg_match($inputPromptTemplate, $analyze, $m)) {
                             if (is_callable($callbackFunctions[$i])) {
                                 //--- Execute callback function on complete:
                                 $callbackFunctions[$i]($answer, $m);
