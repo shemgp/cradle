@@ -107,7 +107,7 @@ class Logger {
      * @return <i>mixed</i> The message of any type.
      */
     public function getLastMessage() {
-        $messages = getMessages();
+        $messages = $this->getMessages();
         if (is_array($messages) && count($messages)>0) {
             return $messages[count($messages)-1];
         }
