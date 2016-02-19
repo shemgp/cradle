@@ -220,11 +220,12 @@ class Telnet {
     //---------------------------------
     
     const ERR_HOST_IS_EMPTY       = 1;
-    const ERR_HOST_IS_UNREACHABLE = 2;
+    const ERR_HOST_IS_NOT_ALIVE = 2;
     const ERR_SOCKET              = 3;
     const ERR_AUTH_FAIL           = 4;
     const ERR_CLOSED_BY_REMOTE    = 5;
     const ERR_TIMEOUT             = 6;
+    const ERR_TIMEOUT_EXEC        = 7;
 
     //--------------------------------------------------------------------------
     // Public functions
@@ -277,7 +278,7 @@ class Telnet {
         
         //--- Is host alive?
         if (!$this->isAlive()) {
-            $this->error(self::ERR_HOST_IS_UNREACHABLE, __FUNCTION__, $this->host);
+            $this->error(self::ERR_HOST_IS_NOT_ALIVE, __FUNCTION__, $this->host);
             return false;
         }
         $this->debug("Host [" . $this->host . "] is alive", __FUNCTION__);
@@ -393,11 +394,38 @@ class Telnet {
     }    
     
     /**
-     * Checks if a host is reachable
+     * Returns the last received data from remote side
+     * 
+     * @param boolean $trimmed (option) Default value = $trimResponse (@see $trimResponse)
+     * @return <i>string</i> Last received data
+     */
+    public function getInputBuffer($trimmed = null) {
+        
+        $trimmed     = $trimmed !== null ? $trimmed : $this->trimResponse ;
+        $inputBuffer = $this->inputBuffer;
+        
+        //--- Strip a garbage:
+        if ($trimmed) {
+            $inputBuffer = $this->trimResponse($inputBuffer);
+        }
+        return $inputBuffer;
+    }
+    
+    /**
+     * Returns seconds of the last timeout
+     * 
+     * @return float Seconds of last timeout
+     */
+    public function getLastTimeout() {
+        return $this->lastTimeout;
+    }
+    
+    /**
+     * Checks if a connection is available
      *  
      * @param  int   $timeout (Option) Timeout in seconds to wait the response from remote side.
-     * @return <i>boolean</i>  TRUE  - host is reachable. <br>
-     *                         FALSE - host is unreachable.
+     * @return <i>boolean</i>  TRUE  - connection is available. <br>
+     *                         FALSE - connection is not available.
      */
     public function isAlive($timeout = null) {
         
@@ -423,8 +451,9 @@ class Telnet {
     private $isAuthenticated = false;
    
     private $inputBuffer;
-    
+    private $lastRequest;
     private $inputPrompt;
+    private $lastTimeout;
     
     //--- Loggers:
     
@@ -462,8 +491,8 @@ class Telnet {
             case self::ERR_HOST_IS_EMPTY:
                 $message = "host [$detail] is empty";
                 break;
-            case self::ERR_HOST_IS_UNREACHABLE:
-                $message = "host [$detail] is unreacheble";
+            case self::ERR_HOST_IS_NOT_ALIVE:
+                $message = "host [$detail] is not alive";
                 break;
             case self::ERR_SOCKET:          
                 $message = "socket error: " . socket_strerror($detail);
@@ -476,6 +505,9 @@ class Telnet {
                 break;
             case self::ERR_TIMEOUT:
                 $message = "timeout";
+                break;
+            case self::ERR_TIMEOUT_EXEC:
+                $message = "the command execution timeout";
                 break;
             default:
                 $message = 'unknown';
@@ -521,6 +553,7 @@ class Telnet {
      * @return boolean TRUE  if it is an error;     <br>
      *                 FALSE if it's not en error
      */
+    /*
     private function isError($e, $source) {
         //if ($e->getCode() === self::ERR_TIMEOUT) {
             //--- It's not an error
@@ -531,6 +564,7 @@ class Telnet {
         $this->error($e->getCode(), $source);
         return true;
     }
+    */
     
     /**
      * First request to remote side
@@ -540,7 +574,7 @@ class Telnet {
         try {
             $this->inputBuffer = $this->read($this->timeout);
         } catch (Exception $e) {
-            $this->isError($e, __FUNCTION__);
+            $this->error($e->getCode(), __FUNCTION__); // isError
         }
     }    
     
@@ -589,7 +623,7 @@ class Telnet {
             }
             $this->getAnswer(
                 [
-                    $this->inputPromptTemplate,    //--- OK
+                    $this->inputPromptTemplate, //--- OK
                     '/(fail|invalid|error)/ims' //--- FAIL 
                 ], 
                 0, 
@@ -601,7 +635,7 @@ class Telnet {
             );
                         
         } catch (Exception $e) {
-            $this->isError($e, __FUNCTION__);
+            $this->error($e->getCode(), __FUNCTION__); // isError
         }
 
         if (!$this->isAuthenticated) {
@@ -626,27 +660,57 @@ class Telnet {
         //--- Do not send an empty command:
         if ($command == "") return "";
 
+        $this->lastRequest = $command;
+        
         //--- Send the command:
-        $this->send($command . "\n"); //--- Add control enter
-        //--- Receive the answer:
-        $answerData = $this->getAnswer($this->inputPromptTemplate, 1, $timeout, function($ansewr, $m){ $this->inputPrompt = $m[0]; });
-        //--- Strip a garbage:
-        if ($this->trimResponse) {
+        $this->send($this->lastRequest . "\n"); //--- Add control enter
+        
+        try {
+            
+            //--- Receive the answer:
+            $responseData = $this->getAnswer($this->inputPromptTemplate, 1, $timeout, function($ansewr, $m){ $this->inputPrompt = $m[0]; });
+            //--- Strip a garbage:
+            if ($this->trimResponse) {
+                $responseData = $this->trimResponse($responseData);
+            }
+            
+        } catch (Exception $e) {
+            
+            if ($e->getCode() == self::ERR_TIMEOUT) {
+                $code = self::ERR_TIMEOUT_EXEC;
+            } else {
+                $code = $e->getCode();
+            }
+            $this->error($code, __FUNCTION__);
+            $responseData = false;
+            
+        }    
+        
+    return $responseData;        
+    }     
+    
+    /**
+     * Strip a garbage from response data
+     * @param  string $responseData Response data
+     * @return string               Trimmed data
+     */
+    private function trimResponse($responseData) {
+        
             //--- Delete command echo from begining:
-            $strings = [$command, "\r", "\n"];
+            $strings = [$this->lastRequest, "\r", "\n"];
             foreach ($strings as $deleteSring) {
-                if ( ($p = strpos($answerData, $deleteSring)) === 0 ) { 
-                    $answerData = substr($answerData, strlen($deleteSring));
+                if ( ($p = strpos($responseData, $deleteSring)) === 0 ) { 
+                    $responseData = substr($responseData, strlen($deleteSring));
                 }
             }
-            //--- Delete input prompt at the end:
-            if ( ($p = strrpos($answerData, $this->inputPrompt)) !== false ) { 
-                $answerData = substr($answerData, 0, $p);
-            }
-        }
             
-    return $answerData;        
-    }     
+            //--- Delete input prompt at the end:
+            if ( ($p = strrpos($responseData, $this->inputPrompt)) !== false ) { 
+                $responseData = substr($responseData, 0, $p);
+            }
+          
+    return $responseData;
+    }
     
     //--------------------------------------------------------------------------
     // Read & Write operations
@@ -702,6 +766,7 @@ class Telnet {
             if ($bytes === false) {
                 if ($timer >= $timerMax) {
                     //--- This not an error just timeout:
+                    $this->lastTimeout = $timerMax / 100; //<-- in seconds
                     throw new Exception("timeout", self::ERR_TIMEOUT);
                 } else {
                     usleep(10000);
@@ -734,44 +799,42 @@ class Telnet {
         if (!is_array($inputPromptTemplates)) $inputPromptTemplates = [$inputPromptTemplates];
         if (!is_array($callbackFunctions)) $callbackFunctions = [$callbackFunctions];
         if (!$timeout)                     $timeout           = $this->timeout;
-        $answer = "";
+        $this->inputBuffer = ""; //<-- Clear the buffer
+        $answer = false;
         $finish = false;
         try {
+            
                 do {
                     //--- Read from socket:
-                    $answer .= $this->read($timeout);
+                    $this->inputBuffer .= $this->read($timeout);
                     if ($analyzeMode) { //--- Fast analyze: (only the last string)
-                        $analyze = array_pop(explode("\n", $answer));
+                        $analyze = array_pop(explode("\n", $this->inputBuffer));
                     } else {            //--- Tolal analyze: (all the answer) 
-                        $analyze = $answer;
+                        $analyze = $this->inputBuffer;
                     }
                     //--- Parse received data:
                     foreach ($inputPromptTemplates as $i => $inputPromptTemplate) {
                         if (preg_match($inputPromptTemplate, $analyze, $m)) {
                             if (is_callable($callbackFunctions[$i])) {
                                 //--- Execute callback function on complete:
-                                $callbackFunctions[$i]($answer, $m);
+                                $callbackFunctions[$i]($this->inputBuffer, $m);
                             }
                             $finish = true;
                             break;
                         }
                     }
                 } while (!$finish);
+                //--- Copy received data:
+                $answer = $this->inputBuffer;
+                
             } catch (Exception $e) {
                 
                 if (is_callable($failFunction)) {
-                    
                     $this->debug($e->getMessage(), __FUNCTION__);
                      //--- Execute function on fail
                     $failFunction($e); 
-                    
                 } else {
-                    
-                    if ($this->isError($e, __FUNCTION__)) {
-                        //--- Clear the received data:
-                        $answer = false;
-                    } 
-                    
+                    $this->error($e->getCode(), __FUNCTION__); // if isError
                 }
                 
             }
