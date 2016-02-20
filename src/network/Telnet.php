@@ -454,6 +454,20 @@ class Telnet {
     return $alive;    
     }
     
+    /**
+     * Clear the debug or(and) the error buffer
+     * 
+     * @param string $type Posible values: all|error|debug ; all - by default
+     */
+    public function clearBuffers($type = 'all') {
+        if (($type == 'all' || $type == 'error') && is_object($this->errorLogger)) {
+            $this->errorLogger->init($this->error);
+        } else 
+        if (($type == 'all' || $type == 'debug') && is_object($this->debugLogger)) {
+            $this->debugLogger->init($this->debug);
+        }
+    }
+    
     //==========================================================================
     // Private
     //==========================================================================
@@ -486,7 +500,7 @@ class Telnet {
         if (!is_object($this->debugLogger) || isset($config['debug'])) {
             $this->debugLogger = new Debug($this->debug);
         }
-        if (!is_object($this->errorLogger) || isset($config['debug'])) {
+        if (!is_object($this->errorLogger) || isset($config['error'])) {
             $this->errorLogger = new Logger($this->error);
         }
     }
