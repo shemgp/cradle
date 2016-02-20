@@ -299,6 +299,9 @@ class Telnet {
         //--- First handshake:
         $this->handshake();
         
+        //--- Authenticate:
+        $this->authenticate();
+        
     return $this->socket;
     }
     
@@ -414,10 +417,19 @@ class Telnet {
     /**
      * Returns seconds of the last timeout
      * 
-     * @return float Seconds of last timeout
+     * @return <i>float</i> Seconds of last timeout
      */
     public function getLastTimeout() {
         return $this->lastTimeout;
+    }
+    
+    /**
+     * Returns a banner of remote side
+     * 
+     * @return <i>string</i> Banner text from remote side
+     */
+    public function getBanner() {
+        return $this->banner;
     }
     
     /**
@@ -450,9 +462,10 @@ class Telnet {
     
     private $isAuthenticated = false;
    
+    private $banner;
     private $inputBuffer;
-    private $lastRequest;
     private $inputPrompt;
+    private $lastRequest;
     private $lastTimeout;
     
     //--- Loggers:
@@ -609,6 +622,8 @@ class Telnet {
                 }
             } while (!$authType);
             $this->debug("method: " . $authType, __FUNCTION__);
+            
+            $this->banner = $this->inputBuffer;
             
             switch ($authType) {
                 case  "user":   //--- Auth by user & password
