@@ -687,7 +687,7 @@ class Telnet {
         $command = $command . ""; //--- convert to string
 
         //--- Do not send an empty command:
-        if ($command == "") return "";
+        //if ($command == "") return "";
 
         $this->lastRequest = $command;
         
