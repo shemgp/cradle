@@ -462,7 +462,7 @@ class Telnet {
     public function clearBuffers($type = 'all') {
         if (($type == 'all' || $type == 'error') && is_object($this->errorLogger)) {
             $this->errorLogger->init($this->error);
-        } else 
+        } 
         if (($type == 'all' || $type == 'debug') && is_object($this->debugLogger)) {
             $this->debugLogger->init($this->debug);
         }
