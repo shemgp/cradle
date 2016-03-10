@@ -7,9 +7,7 @@
  */
 namespace digger\cradle\network;
 
-use digger\cradle\common\Basic;
-use digger\cradle\common\Logger;
-use digger\cradle\common\Debug;
+use digger\cradle\network\RemoteExecutor;
 use Exception;
 
 /**
@@ -108,28 +106,28 @@ use Exception;
  * 
  * ~~~
  */
-class Telnet {
+class Telnet extends RemoteExecutor {
 
+    //---------------------------------
+    // Error codes
+    //---------------------------------
+    
+    const ERR_SOCKET              = 5;
+    const ERR_CLOSED_BY_REMOTE    = 6;
+    const ERR_TIMEOUT             = 7;
+    const ERR_TIMEOUT_EXEC        = 8;    
+    
     //--------------------------------------------------------------------------
     // Properties
     //--------------------------------------------------------------------------
     
-    /**
-     * @var_ <i>string</i> The target host (name|ip-address) 
-     */
-    public $host;
+  //public $host;        <-- is inherited
     /**
      * @var_ <i>int</i> The target TCP port.
-     */
-    public $port = 23;
-    /**
-     * @var_ <i>string</i> The username for authentication by 'user & password' method. 
-     */
-    public $user; 
-    /**
-     * @var_ <i>string</i> The password for authentication by 'user & password' method or 'just password' method. 
-     */
-    public $password;
+     */    
+    public $port = 23; //<-- is overridden
+  //public $user;        <-- is inherited 
+  //public $password;    <-- is inherited    
     
     /**
      * @var_ <i>int</i> The socket default timeout in seconds. 
@@ -143,36 +141,6 @@ class Telnet {
      * of the remote side will be deleted from the end.
      */
     public $trimResponse = true;
-    
-    /**
-     * @var_ <i>boolean</i>  Defines the method of error throwing. <br>
-     *  Possible values:                                           <br>
-     *              true  - log error to own buffer (no exception),
-     *                      the returned value of fail `exec` will be === false;     <br>
-     *              false - throw exeption on error;
-     */
-    public $errorSilent = true; // no exception
-    
-    /**
-     * @var_ <i>mixed</i> Defines a debug messages destination.  <br>
-     *  Possible values:                    <br>
-     *      false    - no debug;            <br>
-     *      1        - debug to buffer;     <br>
-     *      2        - debug to STDIN;      <br>
-     *      filename - debug to file;
-     */
-    public $debug           = 1; // debug to buffer
-       
-    /**
-     * @var_ <i>mixed</i> Defines a error mesages destination.  <br>
-     *  Possible values:                    <br>
-     *      false    - no debug;            <br>
-     *      1        - debug to buffer;     <br>
-     *      2        - debug to STDIN;      <br>
-     *      filename - debug to file;
-     */
-    public $error           = 1; // errors to buffer
-
 
     //---------------------------------
     // Terminal parameters
@@ -215,37 +183,9 @@ class Telnet {
      */
     public $inputPromptTemplate = '/^[^#>\$\%]+[#>\$\%]\s*$/'; 
     
-    //---------------------------------
-    // Error codes
-    //---------------------------------
-    
-    const ERR_HOST_IS_EMPTY       = 1;
-    const ERR_HOST_IS_NOT_ALIVE = 2;
-    const ERR_SOCKET              = 3;
-    const ERR_AUTH_FAIL           = 4;
-    const ERR_CLOSED_BY_REMOTE    = 5;
-    const ERR_TIMEOUT             = 6;
-    const ERR_TIMEOUT_EXEC        = 7;
-
     //--------------------------------------------------------------------------
     // Public functions
     //--------------------------------------------------------------------------
-    
-    /**
-     * Constructor
-     * 
-     * @param array $config An array of properties to initialize the class.
-     */
-    public function __construct( $config = null ) {
-        $this->init($config);
-    }
-    
-    /**
-     * Destructor
-     */
-    function __destruct() {
-        $this->close();
-    }
 
     /**
      * Open new telnet connection
@@ -259,7 +199,7 @@ class Telnet {
         
         //--- If it's a new config to create a new conection:
         if ($config) {
-            if ($this->socket) $this->close();
+            if ($this->socket)      { $this->close(); }
             if (is_string($config)) { $config = ['host' => $config]; }
             $this->init($config);
         }
@@ -274,13 +214,15 @@ class Telnet {
             $this->error(self::ERR_HOST_IS_EMPTY, __FUNCTION__);
             return false; 
         }
+        
         $this->debug(date("Y.m.d H:i:s"), __FUNCTION__);
         
         //--- Is host alive?
         if (!$this->isAlive()) {
-            $this->error(self::ERR_HOST_IS_NOT_ALIVE, __FUNCTION__, $this->host);
+            $this->error(self::ERR_UNABLE_TO_CONNECT, __FUNCTION__, $this->host);
             return false;
         }
+        
         $this->debug("Host [" . $this->host . "] is alive", __FUNCTION__);
         
         //--- Craete Socket (TCP):
@@ -316,77 +258,8 @@ class Telnet {
             $this->debug("OK", __FUNCTION__);
         }
     }
-    
-    /**
-     * Execute a single command or an array of commands on the remote side.
-     * 
-     * @param  string|array  $command   A command or an array of commands to execute.
-     * @param  int           $timeout   (Option) Timeout in seconds to wait the response. 
-     *                                  If it doesn't set the default timeout will be used.
-     * 
-     * @return <i>string|array|false</i> Text data of the response from the remote side.
-     *                                   If the `$command` was an array (or string contained "\n")
-     *                                   the response data would be an array: [ 0 => 'response to command-1', 1 => 'response to command-2', ... ]
-     *                                   Returns FALSE on error.
-     */
-    public function exec($command, $timeout = null) {
-        
-        //--- Open and authenticate:
-        if ($this->open() && $this->authenticate()) { 
-            
-            //--- Prepare an array of commands:
-            if (!is_array($command)) { 
-                $commands = explode("\n", $command); 
-            } else {
-                $commands = $command;
-            }
-            
-            //--- Execute an array of commands:
-            for ($i=0; $i<count($commands); $i++) {
-                //--- the command may include some other commands separate by "\n":
-                foreach (explode("\n", $commands[$i]) as $singleCommand) {
-                    if ( ($result[] = $this->executeCommand($singleCommand, $timeout)) === false ) {
-                        $i = count($commands);
-                        break;
-                    }
-                }
-            }
-            
-            //--- Return result: (a single string or an array)
-            if (count($result) === 1 && is_string($command)) {
-                return array_pop($result); 
-            }
-            return $result;
-        }
-        
-    return false;
-    }
-    
+   
     //--------------------------------------------------------------------------
-
-    /**
-     * Returns data of the last error
-     * @return <i>array</i> An array of error data (text message, code, target, ...)
-     */
-    public function getLastError() {
-        return $this->errorLogger->getLastMessage();
-    }
-
-    /**
-     * Returns an array of all errors stored in error buffer.
-     * @return <i>array</i> An array of error buffer.
-     */
-    public function getErrors() {
-        return $this->errorLogger->getMessages();
-    }
-    
-    /**
-     * Returns an array of debug buffer if `debug` property is not FALSE.
-     * @return <i>array</i> An array of debug buffer.
-     */
-    public function getDebug() {
-        return $this->debugLogger->getMessages();
-    }
 
     /**
      * Returns a input prompt marker of remote side
@@ -432,79 +305,20 @@ class Telnet {
         return $this->banner;
     }
     
-    /**
-     * Checks if a connection is available
-     *  
-     * @param  int   $timeout (Option) Timeout in seconds to wait the response from remote side.
-     * @return <i>boolean</i>  TRUE  - connection is available. <br>
-     *                         FALSE - connection is not available.
-     */
-    public function isAlive($timeout = null) {
-        
-        $timeout = $timeout ? $timeout : $this->timeout;
-        $timeout = $timeout ? $timeout : 5;
-        
-        if($fp = @fsockopen($this->host, $this->port, $errCode, $errStr, $timeout)){   
-           $alive = true;  // Host is alive
-           fclose($fp);
-        } else {
-           $alive = false; // Host is unreachable 
-        } 
-        
-    return $alive;    
-    }
-    
-    /**
-     * Clear the debug or(and) the error buffer
-     * 
-     * @param string $type Posible values: all|error|debug ; all - by default
-     */
-    public function clearBuffers($type = 'all') {
-        if (($type == 'all' || $type == 'error') && is_object($this->errorLogger)) {
-            $this->errorLogger->init($this->error);
-        } 
-        if (($type == 'all' || $type == 'debug') && is_object($this->debugLogger)) {
-            $this->debugLogger->init($this->debug);
-        }
-    }
-    
+   
     //==========================================================================
     // Private
     //==========================================================================
     
-    private $socket;
-    
-    private $isAuthenticated = false;
+    protected $socket;
+    protected $isAuthenticated = false;
    
-    private $banner;
-    private $inputBuffer;
-    private $inputPrompt;
-    private $lastRequest;
-    private $lastTimeout;
-    
-    //--- Loggers:
-    
-    protected $debugLogger;
-    protected $errorLogger;
+    protected $banner;
+    protected $inputBuffer;
+    protected $inputPrompt;
+    protected $lastRequest;
+    protected $lastTimeout;
 
-
-    //--------------------------------------------------------------------------
-    
-    /**
-     * Init the class
-     */
-    private function init($config) {
-        //--- Init the class:
-        Basic::initClass($this, $config);
-        //--- Create loggers:
-        if (!is_object($this->debugLogger) || isset($config['debug'])) {
-            $this->debugLogger = new Debug($this->debug);
-        }
-        if (!is_object($this->errorLogger) || isset($config['error'])) {
-            $this->errorLogger = new Logger($this->error);
-        }
-    }
-    
     //--------------------------------------------------------------------------
   
     /**
@@ -512,20 +326,11 @@ class Telnet {
      * 
      * @throws Exception
      */
-    private function error($code, $source = "", $detail = null) {
+    protected function error($code, $source = "", $detail = null) {
         //--- Get a message:
         switch ($code) {
-            case self::ERR_HOST_IS_EMPTY:
-                $message = "host [$detail] is empty";
-                break;
-            case self::ERR_HOST_IS_NOT_ALIVE:
-                $message = "host [$detail] is not alive";
-                break;
             case self::ERR_SOCKET:          
                 $message = "socket error: " . socket_strerror($detail);
-                break;
-            case self::ERR_AUTH_FAIL:
-                $message = "authentication failed";
                 break;
             case self::ERR_CLOSED_BY_REMOTE:
                 $message = "connection is closed by the remote side";
@@ -537,28 +342,14 @@ class Telnet {
                 $message = "the command execution timeout";
                 break;
             default:
-                $message = 'unknown';
         }
-        //--- Error structure:
-        $error = [ 
-            "source" => $source, 
-            "message"=> $message,
-            "code"   => $code,
-            "detail" => $detail, 
-        ];
-        //--- Save error:
-        $this->errorLogger->save($error, $source);
-        $this->debugLogger->save("ERROR: " . $message, $source);
-        //--- Throw exception if need:
-        if (!$this->errorSilent) {
-            throw new Exception($message, $code);
-        }
+        return parent::error($code, $source, $message, $detail);
     }
     
     /**
      * Create a debug message
      */
-    private function debug($message, $source = "") {
+    protected function debug($message, $source = "") {
         
         if (!$this->debug) { return; }
         
@@ -575,28 +366,9 @@ class Telnet {
     //--------------------------------------------------------------------------
     
     /**
-     * Check the exception
-     * 
-     * @return boolean TRUE  if it is an error;     <br>
-     *                 FALSE if it's not en error
-     */
-    /*
-    private function isError($e, $source) {
-        //if ($e->getCode() === self::ERR_TIMEOUT) {
-            //--- It's not an error
-            //... Continue
-            //return false;
-        //} 
-        //--- Create an error:
-        $this->error($e->getCode(), $source);
-        return true;
-    }
-    */
-    
-    /**
      * First request to remote side
      */
-    private function handshake() {
+    protected function handshake() {
         $this->debug("start", __FUNCTION__);
         try {
             $this->inputBuffer = $this->read($this->timeout);
@@ -611,7 +383,7 @@ class Telnet {
      * @return boolean  TRUE  - Authentication is success. <br>
      *                  FALSE - Authentication is fail.
      */
-    private function authenticate() {
+    protected function authenticate() {
         //--- Nothing to do if authentication is already pass:
         if ($this->isAuthenticated) {
             return true;
@@ -682,7 +454,7 @@ class Telnet {
      * 
      * @return string   The text data of response.
      */
-    private function executeCommand($command, $timeout = null) {
+    protected function executeCommand($command, $timeout = null) {
         
         $command = $command . ""; //--- convert to string
 
@@ -723,7 +495,7 @@ class Telnet {
      * @param  string $responseData Response data
      * @return string               Trimmed data
      */
-    private function trimResponse($responseData) {
+    protected function trimResponse($responseData) {
         
             //--- Delete command echo from begining:
             $strings = [$this->lastRequest, "\r", "\n"];
@@ -751,7 +523,7 @@ class Telnet {
      * @param  string    $data  Data to send
      * @return int|false        Count of bytes sent or FALSE on fail
      */
-    private function send($data) {
+    protected function send($data) {
         $bytesSent = socket_send($this->socket, $data, strlen($data), 0);
         $this->debug("bytes [$bytesSent], data [" . $data . "]", __FUNCTION__);
         if ($bytesSent === false) {
@@ -774,7 +546,7 @@ class Telnet {
      *      2. If socket is closed by the remote side
      *      3. If socket error
      */
-    private function read($timeout) {
+    protected function read($timeout) {
         $buffer   = "";
         $size     = 8192;
         $timer    = 0;
@@ -824,7 +596,7 @@ class Telnet {
     /**
      * Advanced `read` (`read` wrapper)
      */
-    private function getAnswer($inputPromptTemplates, $analyzeMode = 0, $timeout = null, $callbackFunctions = null, $failFunction = null) {
+    protected function getAnswer($inputPromptTemplates, $analyzeMode = 0, $timeout = null, $callbackFunctions = null, $failFunction = null) {
         if (!is_array($inputPromptTemplates)) $inputPromptTemplates = [$inputPromptTemplates];
         if (!is_array($callbackFunctions)) $callbackFunctions = [$callbackFunctions];
         if (!$timeout)                     $timeout           = $this->timeout;
@@ -877,7 +649,7 @@ class Telnet {
     /**
      * Parses data and separate into TELNET-commands and text
      */
-    private function parseInput($string) {
+    protected function parseInput($string) {
         
         $text     = ''; 
         $commands = null;
@@ -929,7 +701,7 @@ class Telnet {
     /**
      * Create a string with TELNET commands for response to remote side
      */
-    private function getCommResponse($commBuffer) {
+    protected function getCommResponse($commBuffer) {
         if (!$commBuffer) return null;
         
         $IAC = chr(0xff);
@@ -984,7 +756,7 @@ class Telnet {
     /**
      * Converts mixed data to string
      */
-    private function toString($input, $mode = null) {
+    protected function toString($input, $mode = null) {
         switch ($mode) {
             case "comm": // terminal commands array:
                 if (is_array($input)) {
@@ -1014,7 +786,7 @@ class Telnet {
     /**
      * @var_ array TELNET commands 
      */
-    private $tmCmd = [
+    protected $tmCmd = [
         "SE"   => 0xf0, // (240)
         "SB"   => 0xfa, // (250)
         "WILL" => 0xfb, // (251)
@@ -1023,23 +795,23 @@ class Telnet {
         "DONT" => 0xfe, // (254)
         "IAC"  => 0xff, // (255) «Interpret as Command»
     ];
-    private $tmCmdCodes = null;
+    protected $tmCmdCodes = null;
 
     /**
      * @var_ array TELNET options 
      */
-    private $tmOption = [ // http://www.iana.org/assignments/telnet-options/telnet-options.xhtml
+    protected $tmOption = [ // http://www.iana.org/assignments/telnet-options/telnet-options.xhtml
         "ECHO"   => 0x1,  // (1)  ECHO              http://tools.ietf.org/html/rfc857
         "SUPG"   => 0x3,  // (3)  SUPPRESS-GO-AHEAD http://tools.ietf.org/html/rfc858
         "TTYPE"  => 0x18, // (24) TERMINAL-TYPE     http://tools.ietf.org/html/rfc1091
         "WSIZE"  => 0x1f, // (31) WINDOW-SIZE       http://tools.ietf.org/html/rfc1073
     ];
-    private $tmOptionCodes = null;
+    protected $tmOptionCodes = null;
    
     /**
      * TELNET command code to command name
      */
-    private function getTerminalCommandName($code) {
+    protected function getTerminalCommandName($code) {
         if (!is_array($this->tmCmdCodes))   $this->tmCmdCodes = array_flip($this->tmCmd);
         if (array_key_exists($code, $this->tmCmdCodes)) $code = $this->tmCmdCodes[$code];
     return $code;    
@@ -1048,7 +820,7 @@ class Telnet {
     /**
      * TELNET option code to option name
      */
-    private function getTerminalOptionName($code) {
+    protected function getTerminalOptionName($code) {
         if (!is_array($this->tmOptionCodes))   $this->tmOptionCodes = array_flip($this->tmOption);
         if (array_key_exists($code, $this->tmOptionCodes)) $code = $this->tmOptionCodes[$code];
     return $code;    
