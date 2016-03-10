@@ -1,6 +1,6 @@
 <?php
 /*==============================================================================
- *  Title      : SQL (PDO) Wrapper 
+ *  Title      : SQL (PDO) wrapper 
  *  Author     : Digger (c) SAD-Systems <http://sad-systems.ru>
  *  Created on : 10.03.2016
  *==============================================================================
@@ -8,9 +8,9 @@
 namespace digger\cradle\network;
 
 /**
- * @brief SQL request Wrapper
+ * @brief SQL request wrapper
  * 
- * Simple SQL (PDO) request wrapper class.
+ * A simple SQL (PDO) request wrapper class.
  * Designed to make simple SQL requests more easy and short.
  * 
  * Supported databse types: mysql, pgsql, oci, sqlite, dblib(mssql,sybase) ...and all of PDO db types.
