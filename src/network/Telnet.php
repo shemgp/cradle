@@ -786,7 +786,7 @@ class Telnet extends RemoteExecutor {
     /**
      * @var_ array TELNET commands 
      */
-    protected $tmCmd = [
+    protected $tmCmd = array (
         "SE"   => 0xf0, // (240)
         "SB"   => 0xfa, // (250)
         "WILL" => 0xfb, // (251)
@@ -794,18 +794,18 @@ class Telnet extends RemoteExecutor {
         "DO"   => 0xfd, // (253)
         "DONT" => 0xfe, // (254)
         "IAC"  => 0xff, // (255) «Interpret as Command»
-    ];
+    );
     protected $tmCmdCodes = null;
 
     /**
      * @var_ array TELNET options 
      */
-    protected $tmOption = [ // http://www.iana.org/assignments/telnet-options/telnet-options.xhtml
+    protected $tmOption = array ( // http://www.iana.org/assignments/telnet-options/telnet-options.xhtml
         "ECHO"   => 0x1,  // (1)  ECHO              http://tools.ietf.org/html/rfc857
         "SUPG"   => 0x3,  // (3)  SUPPRESS-GO-AHEAD http://tools.ietf.org/html/rfc858
         "TTYPE"  => 0x18, // (24) TERMINAL-TYPE     http://tools.ietf.org/html/rfc1091
         "WSIZE"  => 0x1f, // (31) WINDOW-SIZE       http://tools.ietf.org/html/rfc1073
-    ];
+    );
     protected $tmOptionCodes = null;
    
     /**
