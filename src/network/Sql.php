@@ -57,19 +57,19 @@ namespace digger\cradle\network;
  * //=== SELECT request:
  * 
  * //--- Full use:
- * $result = Sql::select("select * from table1 where name=:name order by name", array("name"=>"my neme"))
+ * $result = Sql::select("select * from table1 where name=:name order by name", array("name"=>"my neme"));
  * 
  * //--- Short use:
  * $result = Sql::select();                // -> "select * from [TABLE]"
  * $result = Sql::select( "", "", $conn ); // -> "select * from [TABLE]" using params from $conn
  * 
  * //--- Spesial use:
- * $result = Sql::select( "from [TABLE]", array("name"=>"my name") );          // -> "select * from [TABLE] where name='my name'"
- * $result = Sql::select( "a,b,c from [TABLE]", array("name"=>"my neme") );    // -> "select a,b,c from [TABLE] where name='my name'"
- * $result = Sql::select( "table2", array("name"=>"my name")) ;                // -> "select * from table2 where name='my name'"
- * $result = Sql::select( "where name like :name", array("name"=>"my neme") ); // -> "select * from [TABLE] where name like 'my name'"
- * $result = Sql::select( "[WHERE] order by name", array("name"=>"new") );     // -> "select * from [TABLE] where name='new' order by name"
- * $result = Sql::select( "from [TABLE] order by name" );                      // -> "select * from [TABLE] order by name"
+ * $result = Sql::select( "from [TABLE]",          ["name"=>"my name"] ); // -> "select * from [TABLE] where name='my name'"
+ * $result = Sql::select( "a,b,c from [TABLE]",    ["name"=>"my neme"] ); // -> "select a,b,c from [TABLE] where name='my name'"
+ * $result = Sql::select( "table2",                ["name"=>"my name"] ); // -> "select * from table2 where name='my name'"
+ * $result = Sql::select( "where name like :name", ["name"=>"my neme"] ); // -> "select * from [TABLE] where name like 'my name'"
+ * $result = Sql::select( "[WHERE] order by name", ["name"=>"new"] );     // -> "select * from [TABLE] where name='new' order by name"
+ * $result = Sql::select( "from [TABLE] order by name" );                 // -> "select * from [TABLE] order by name"
  * 
  * print_r($result);
  * 
@@ -81,11 +81,11 @@ namespace digger\cradle\network;
  * echo Sql::insert( "insert into table1 (a,b,c) values (:a,:b,:c)", array("a"=>1, "b"=>2, "c"=>3), $conn )
  * 
  * //--- Short use:
- * echo Sql::insert("", ["a"=>1, "b"=>2, "c"=>3]);
+ * echo Sql::insert( "", ["a"=>1, "b"=>2, "c"=>3] );
  * 
  * //--- Spesial use:
- * echo Sql::insert("into [TABLE]", ["id_user"=>"1003", "name"=>"test"]);
- * echo Sql::insert("table2", ["id_user"=>"1003", "name"=>"test"]);
+ * echo Sql::insert( "into [TABLE]", ["id_user"=>"1003", "name"=>"test"] );
+ * echo Sql::insert( "table2",       ["id_user"=>"1003", "name"=>"test"] );
  *  
  * //=== UPDATE request:
  * 
@@ -93,7 +93,7 @@ namespace digger\cradle\network;
  * echo Sql::update( "update table1 set name=?, id_user=? where name=?", array("my name", "1002", "old name"), $conn );
  * 
  * //--- Spesial use:
- * echo Sql::update( "set name=?, id_user=? where name=?", ["my name", "1002", "old name"]);
+ * echo Sql::update( "set name=?, id_user=? where name=?",         ["my name", "1002", "old name"] );
  * echo Sql::update( "[TABLE] set name=?, id_user=? where name=?", ["my name", "1002", "old name"] );
  * echo Sql::update( "table1 set name=?, id_user=? where name=?",  ["my name", "1002", "old name"] );
  * //                                                               --------- params ------------
@@ -104,12 +104,12 @@ namespace digger\cradle\network;
  * //=== DELETE request:
  * 
  * //--- Full use:
- * echo Sql::delete("delete from table1 where name=:a", array("a"=>"my neme"), $conn);
+ * echo Sql::delete( "delete from table1 where name=:a", array("a"=>"my neme"), $conn );
  * 
  * //--- Spesial use:
- * echo Sql::delete("", ["id_user"=>"1003", "name"=>"test"]);
- * echo Sql::delete("from [TABLE]", ["name"=>"my neme"]);
- * echo Sql::delete("table1", ["name"=>"my neme"]);
+ * echo Sql::delete( "",             ["id_user"=>"1003", "name"=>"test"] );
+ * echo Sql::delete( "from [TABLE]", ["name"=>"my neme"]);
+ * echo Sql::delete( "table1",       ["name"=>"my neme"] );
  * 
  * ~~~
  */
@@ -495,11 +495,11 @@ class  Sql {
             }
             if ( $mode===1 && is_array($S)) {
                 //--- Select:
-                return "where ".implode(",",$S);
+                return " where ".implode(",",$S);
             }
             if ( $mode===2 && is_array($S)) {
                 //--- Delete:
-                return "where ".implode(" and ",$S);
+                return " where ".implode(" and ",$S);
             }
         }
         
