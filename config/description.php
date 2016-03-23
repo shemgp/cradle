@@ -9,12 +9,12 @@
 return [
     'title'       => 'Cradle',
     'description' => 'Simple library for creating Web-based applications',
-    'version'     => '0.3.1',
+    'version'     => '0.3.3',
     'logo'        => '',
     'author'      => [
              'name' => 'Mr Digger',
             'email' => 'mrdigger@mail.ru',
-         'homepage' => 'http://sad-systems.ru/',
+         'homepage' => 'http://sad-systems.ru',
              'role' => 'Founder and project lead',
     ],   
 ];
