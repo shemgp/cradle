@@ -161,7 +161,7 @@ class Telnet extends RemoteExecutor {
      * TELNET option (24) "TERMINAL-TYPE" <http://tools.ietf.org/html/rfc1091> <br>
      * TELNET terminal names <http://www.iana.org/assignments/terminal-type-names/terminal-type-names.xhtml#terminal-type-names-1>
      */
-    public $ternimalType    = "DEC-VT100";
+    public $ternimalType    = "vt100"; //"DEC-VT100";
     /**
      * @var_ <i>int</i> Value of terminal characters in line.           <br>
      * TELNET option (31) "WINDOW-SIZE" <http://tools.ietf.org/html/rfc1073>
@@ -173,6 +173,11 @@ class Telnet extends RemoteExecutor {
      */
     public $terminatHeight  = 0;
     
+    /**
+     * @var_ <i>string</i> A key of the end of input.                   <br>
+     */
+    public $enterKey        = "\r"; // "\n"
+    
     //---------------------------------
     // Spesial
     //---------------------------------
@@ -181,7 +186,7 @@ class Telnet extends RemoteExecutor {
      * @var_ <i>string</i> Regular expression template to find a input prompt marker ('Ready for input')
      * of remote side. By default it set as: '/^[^#>\$\%]+[#>\$\%]\s*$/'
      */
-    public $inputPromptTemplate = '/^[^#>\$\%]+[#>\$\%]\s*$/'; 
+    public $inputPromptTemplate = '/^[^#>\$\%]+[#>\$\%\?]\s*$/'; 
     
     //--------------------------------------------------------------------------
     // Public functions
@@ -414,12 +419,12 @@ class Telnet extends RemoteExecutor {
             switch ($authType) {
                 case  "user":   //--- Auth by user & password
                 case "login":
-                    $this->send($this->user . "\n");
+                    $this->send($this->user . $this->enterKey);
                     $this->getAnswer('/password/i');
-                    $this->send($this->password . "\n");
+                    $this->send($this->password . $this->enterKey);
                     break;
                 default:        //--- Auth by password only
-                    $this->send($this->password . "\n");
+                    $this->send($this->password . $this->enterKey);
                     break;
             }
             $this->getAnswer(
@@ -464,7 +469,7 @@ class Telnet extends RemoteExecutor {
         $this->lastRequest = $command;
         
         //--- Send the command:
-        $this->send($this->lastRequest . "\n"); //--- Add control enter
+        $this->send($this->lastRequest . $this->enterKey); //--- Add control enter
         
         try {
             
