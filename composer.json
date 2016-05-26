@@ -1,7 +1,7 @@
 {
     "name": "digger/cradle",
     "description": "Simple PHP library for creating Web-based applications",
-    "keywords": [ "digger", "cradle" ],
+    "keywords": [ "digger", "cradle", "php", "ldap", "sql", "icmp", "snmp", "ssh", "telnet", "ipphone", "diff" ],
     "homepage": "http://sad-systems.ru/",
     "type": "library",
     "license": "MIT",
