@@ -496,25 +496,41 @@ class Telnet extends RemoteExecutor {
     }     
     
     /**
-     * Strip a garbage from response data
+     * Delete 'echo' & 'prompt' from response data
+     * 
      * @param  string $responseData Response data
      * @return string               Trimmed data
      */
-    protected function trimResponse($responseData) {
-        
-            //--- Delete command echo from begining:
+    public function trimResponse($responseData) {
+        return $this->trimFromPrompt( $this->trimFromEcho($responseData) );
+    }
+    
+    /**
+     * Delete 'echo' of input commands from the begining of response data
+     * 
+     * @param  string $responseData Response data
+     * @return string               Trimmed data
+     */
+    public function trimFromEcho($responseData) {
             $strings = [$this->lastRequest, "\r", "\n"];
             foreach ($strings as $deleteSring) {
                 if ( ($p = strpos($responseData, $deleteSring)) === 0 ) { 
                     $responseData = substr($responseData, strlen($deleteSring));
                 }
             }
-            
-            //--- Delete input prompt at the end:
+    return $responseData;
+    }
+    
+    /**
+     * Delete a 'prompt' at the end of response data
+     * 
+     * @param  string $responseData Response data
+     * @return string               Trimmed data
+     */
+    public function trimFromPrompt($responseData) {
             if ( ($p = strrpos($responseData, $this->inputPrompt)) !== false ) { 
                 $responseData = substr($responseData, 0, $p);
             }
-          
     return $responseData;
     }
     
