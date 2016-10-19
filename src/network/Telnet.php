@@ -12,9 +12,9 @@ use Exception;
 
 /**
  * @brief Telnet interaction
- * 
+ *
  * A simple class to send commands to remote host through the TELNET protocol.
- * 
+ *
  * TELNET protocol specification: <http://tools.ietf.org/html/rfc854><br>
  * TELNET option:    <http://www.iana.org/assignments/telnet-options/telnet-options.xhtml><br>
  * TELNET terminals: <http://www.iana.org/assignments/terminal-type-names/terminal-type-names.xhtml#terminal-type-names-1><br>
@@ -22,7 +22,7 @@ use Exception;
  * @version 4.0
  * @author Digger <mrdigger@sad-systems.ru>
  * @copyright (c) 2016, SAD-Systems
- * 
+ *
  * <h3>Example of usage:</h3>
  * ~~~
  * <?php
@@ -31,11 +31,11 @@ use Exception;
  *
  *   $r = (new Telnet([ 'host' => "host", 'user' => "user", 'password' => "password" ]))->exec("show clock");
  *   print_r( $r );
- *    
+ *
  *   //--- 2. Normal usage:
  *
  *   $t = new Telnet([
- *       'host'     => "host", 
+ *       'host'     => "host",
  *       'user'     => "username",
  *       'password' => "password",
  *       'debug'    => "debug.dat", // to file (option)
@@ -56,7 +56,7 @@ use Exception;
  *   //--- 3. Advanced usage:
  *
  *   $t = new Telnet([
- *       'host'     => "host", 
+ *       'host'     => "host",
  *       'user'     => "username",
  *       'password' => "password",
  *       'timeout'  => 30,         // default timeout is 30 sec
@@ -70,7 +70,7 @@ use Exception;
  *   try {
  *       foreach ($commands as $command) {
  *           echo "command : $command\n";
- *           $r = $t->exec($command, 20); // every command with own timeout 20 sec 
+ *           $r = $t->exec($command, 20); // every command with own timeout 20 sec
  *           print_r($r);
  *       }
  *   } catch (Exception $e) {
@@ -80,7 +80,7 @@ use Exception;
  *   }
  *
  *   $t->close();
- * 
+ *
  *   //--- 4. Several targets:
  *
  *   $config   = ['user' => "user", 'password' => "password", 'errorSilent' => false, 'debug' => 2];
@@ -93,7 +93,7 @@ use Exception;
  *       try {
  *           echo "Host: $host\n";
  *           $t->open($host);
- *           $r = $t->exec($commands); 
+ *           $r = $t->exec($commands);
  *           print_r($r);
  *       } catch (Exception $e) {
  *           echo "Exception: " . $e->getMessage() . " Code: " . $e->getCode() . "\n";
@@ -101,9 +101,9 @@ use Exception;
  *           print_r($t->getErrors());
  *       }
  *   }
- *   
+ *
  *   $t->close();
- * 
+ *
  * ~~~
  */
 class Telnet extends RemoteExecutor {
@@ -111,30 +111,30 @@ class Telnet extends RemoteExecutor {
     //---------------------------------
     // Error codes
     //---------------------------------
-    
+
     const ERR_SOCKET              = 5;
     const ERR_CLOSED_BY_REMOTE    = 6;
     const ERR_TIMEOUT             = 7;
-    const ERR_TIMEOUT_EXEC        = 8;    
-    
+    const ERR_TIMEOUT_EXEC        = 8;
+
     //--------------------------------------------------------------------------
     // Properties
     //--------------------------------------------------------------------------
-    
+
   //public $host;        <-- is inherited
     /**
      * @var_ <i>int</i> The target TCP port.
-     */    
+     */
     public $port = 23; //<-- is overridden
-  //public $user;        <-- is inherited 
-  //public $password;    <-- is inherited    
-    
+  //public $user;        <-- is inherited
+  //public $password;    <-- is inherited
+
     /**
-     * @var_ <i>int</i> The socket default timeout in seconds. 
+     * @var_ <i>int</i> The socket default timeout in seconds.
      * Defines how long should wait the response from remote side.
      */
     public $timeout = 10;
-    
+
     /**
      * @var_ <i>boolean</i> If set true, the data returned by `exec` method will be trimmed.
      * The echo of the command will be deleted from the beginning and the marker 'Ready for input'
@@ -145,7 +145,7 @@ class Telnet extends RemoteExecutor {
     //---------------------------------
     // Terminal parameters
     //---------------------------------
-    
+
     /**
      * @var_ <i>boolean</i> Enable or disable echo.               <br>
      * TELNET option (1) "ECHO-ON" <http://tools.ietf.org/html/rfc857>
@@ -172,98 +172,105 @@ class Telnet extends RemoteExecutor {
      * TELNET option (31) "WINDOW-SIZE" <http://tools.ietf.org/html/rfc1073>
      */
     public $terminatHeight  = 0;
-    
+
     /**
      * @var_ <i>string</i> A key of the end of input.                   <br>
      */
     public $enterKey        = "\r"; // "\n"
-    
+
+    /**
+     * @var_ <i>boolean</i> If set TRUE, the target host will be checked is it alive or not,
+     * and only in case of success the connection will be opened.
+     * If set FALSE the preliminary communication check will be disabled.
+     */
+    public $enableIsAliveCheck = true;
+
     //---------------------------------
     // Spesial
     //---------------------------------
-    
+
     /**
      * @var_ <i>string</i> Regular expression template to find a input prompt marker ('Ready for input')
      * of remote side. By default it set as: '/^[^#>\$\%]+[#>\$\%]\s*$/'
      */
-    public $inputPromptTemplate = '/^[^#>\$\%]+[#>\$\%\?]\s*$/'; 
-    
+    public $inputPromptTemplate = '/^[^#>\$\%]+[#>\$\%\?]\s*$/';
+
     //--------------------------------------------------------------------------
     // Public functions
     //--------------------------------------------------------------------------
 
     /**
      * Open new telnet connection
-     * 
-     * @param  array|string    $config  An array of properties to initialize the class. 
-     *                                  If `$config` is a string it will be interpreted as a `host` 
+     *
+     * @param  array|string    $config  An array of properties to initialize the class.
+     *                                  If `$config` is a string it will be interpreted as a `host`
      *                                  (same as $config = [ 'host' => $config ]).
      * @return <i>resource|false</i>    Resource ID of the open socket or FALSE on fail.
      */
     public function open( $config = null ) {
-        
+
         //--- If it's a new config to create a new conection:
         if ($config) {
             if ($this->socket)      { $this->close(); }
             if (is_string($config)) { $config = ['host' => $config]; }
             $this->init($config);
         }
-        
+
         //--- Nothing to do if the socket is opened:
         if ($this->socket) {
             return $this->socket;
         }
-        
+
         //--- Check the host:
-        if (!$this->host) { 
+        if (!$this->host) {
             $this->error(self::ERR_HOST_IS_EMPTY, __FUNCTION__);
-            return false; 
+            return false;
         }
-        
+
         $this->debug(date("Y.m.d H:i:s"), __FUNCTION__);
-        
+
         //--- Is host alive?
-        if (!$this->isAlive()) {
+        if ($this->enableIsAliveCheck && !$this->isAlive()) {
             $this->error(self::ERR_UNABLE_TO_CONNECT, __FUNCTION__, $this->host);
             return false;
         }
-        
+
         $this->debug("Host [" . $this->host . "] is alive", __FUNCTION__);
-        
+
         //--- Craete Socket (TCP):
         if (!$this->socket = socket_create(AF_INET, SOCK_STREAM, SOL_TCP)) {
             $this->error(self::ERR_SOCKET, __FUNCTION__, $this->socket);
-            return false; 
+            return false;
         }
-        
+
         //--- Connect to host:
         if (! socket_connect($this->socket, $this->host, $this->port)) {
             $this->error(self::ERR_SOCKET, __FUNCTION__, socket_last_error());
-            return false; 
+            return false;
         }
         $this->debug("Connected to [" . $this->host . ":" . $this->port . "], socket [" . $this->socket . "]", __FUNCTION__);
-        
+
         //--- First handshake:
         $this->handshake();
-        
+
         //--- Authenticate:
         $this->authenticate();
-        
+
     return $this->socket;
     }
-    
+
     /**
      * Close the telnet connection
      */
     public function close() {
-        if ($this->socket) { 
-            socket_close($this->socket); 
+        if ($this->socket) {
+            socket_close($this->socket);
             $this->socket          = null;
             $this->isAuthenticated = false;
             $this->debug("OK", __FUNCTION__);
         }
     }
-   
+
     //--------------------------------------------------------------------------
 
     /**
@@ -272,52 +279,52 @@ class Telnet extends RemoteExecutor {
      */
     public function getInputPrompt() {
         return $this->inputPrompt;
-    }    
-    
+    }
+
     /**
      * Returns the last received data from remote side
-     * 
+     *
      * @param boolean $trimmed (option) Default value = $trimResponse (@see $trimResponse)
      * @return <i>string</i> Last received data
      */
     public function getInputBuffer($trimmed = null) {
-        
+
         $trimmed     = $trimmed !== null ? $trimmed : $this->trimResponse ;
         $inputBuffer = $this->inputBuffer;
-        
+
         //--- Strip a garbage:
         if ($trimmed) {
             $inputBuffer = $this->trimResponse($inputBuffer);
         }
         return $inputBuffer;
     }
-    
+
     /**
      * Returns seconds of the last timeout
-     * 
+     *
      * @return <i>float</i> Seconds of last timeout
      */
     public function getLastTimeout() {
         return $this->lastTimeout;
     }
-    
+
     /**
      * Returns a banner of remote side
-     * 
+     *
      * @return <i>string</i> Banner text from remote side
      */
     public function getBanner() {
         return $this->banner;
     }
-    
-   
+
+
     //==========================================================================
     // Private
     //==========================================================================
-    
+
     protected $socket;
     protected $isAuthenticated = false;
-   
+
     protected $banner;
     protected $inputBuffer;
     protected $inputPrompt;
@@ -325,16 +332,16 @@ class Telnet extends RemoteExecutor {
     protected $lastTimeout;
 
     //--------------------------------------------------------------------------
-  
+
     /**
      * Create an error
-     * 
+     *
      * @throws Exception
      */
     protected function error($code, $source = "", $detail = null) {
         //--- Get a message:
         switch ($code) {
-            case self::ERR_SOCKET:          
+            case self::ERR_SOCKET:
                 $message = "socket error: " . socket_strerror($detail);
                 break;
             case self::ERR_CLOSED_BY_REMOTE:
@@ -350,26 +357,26 @@ class Telnet extends RemoteExecutor {
         }
         return parent::error($code, $source, $message, $detail);
     }
-    
+
     /**
      * Create a debug message
      */
     protected function debug($message, $source = "") {
-        
+
         if (!$this->debug) { return; }
-        
+
         if (is_array($message) && $message['0'] === 1) {
             list($code, $bytes, $commands, $text) = $message;
             $message = "bytes [$bytes],\n\tdata comm [" . $this->toString($commands, "comm") . "],\n\tdata text [" . $text . "]";
         }
-        
+
         $this->debugLogger->save($message, $source);
     }
-    
+
     //--------------------------------------------------------------------------
     // Communication
     //--------------------------------------------------------------------------
-    
+
     /**
      * First request to remote side
      */
@@ -380,11 +387,11 @@ class Telnet extends RemoteExecutor {
         } catch (Exception $e) {
             $this->error($e->getCode(), __FUNCTION__); // isError
         }
-    }    
-    
+    }
+
     /**
      * Authenticate the access to remote side
-     * 
+     *
      * @return boolean  TRUE  - Authentication is success. <br>
      *                  FALSE - Authentication is fail.
      */
@@ -398,12 +405,12 @@ class Telnet extends RemoteExecutor {
             $this->debug("User & Password is empty - authentication is disabled", __FUNCTION__);
             return true;
         }
-        
+
         //--- Authenticate:
         $this->debug("start", __FUNCTION__);
-        
+
         try {
-            
+
             $authType = false;
             do {
                 if (!preg_match("/(login|user|password)/i", array_pop(explode("\n", $this->inputBuffer)), $m)) {
@@ -413,9 +420,9 @@ class Telnet extends RemoteExecutor {
                 }
             } while (!$authType);
             $this->debug("method: " . $authType, __FUNCTION__);
-            
+
             $this->banner = $this->inputBuffer;
-            
+
             switch ($authType) {
                 case  "user":   //--- Auth by user & password
                 case "login":
@@ -430,16 +437,16 @@ class Telnet extends RemoteExecutor {
             $this->getAnswer(
                 [
                     $this->inputPromptTemplate, //--- OK
-                    '/(fail|invalid|error)/ims' //--- FAIL 
-                ], 
-                0, 
+                    '/(fail|invalid|error)/ims' //--- FAIL
+                ],
+                0,
                 $this->timeout,
                 [
                     function ($answer, $m) { $this->isAuthenticated = true; },
-                    function ($answer, $m) { $this->error(self::ERR_AUTH_FAIL, "device", preg_replace('/\s+/', " ", $answer)); }        
+                    function ($answer, $m) { $this->error(self::ERR_AUTH_FAIL, "device", preg_replace('/\s+/', " ", $answer)); }
                 ]
             );
-                        
+
         } catch (Exception $e) {
             $this->error($e->getCode(), __FUNCTION__); // isError
         }
@@ -450,38 +457,38 @@ class Telnet extends RemoteExecutor {
         } else {
             $this->debug("Success", __FUNCTION__);
         }
-    
-    return $this->isAuthenticated;    
+
+    return $this->isAuthenticated;
     }
 
     /**
      * Execute a single command on remote side
-     * 
+     *
      * @return string   The text data of response.
      */
     protected function executeCommand($command, $timeout = null) {
-        
+
         $command = $command . ""; //--- convert to string
 
         //--- Do not send an empty command:
         //if ($command == "") return "";
 
         $this->lastRequest = $command;
-        
+
         //--- Send the command:
         $this->send($this->lastRequest . $this->enterKey); //--- Add control enter
-        
+
         try {
-            
+
             //--- Receive the answer:
             $responseData = $this->getAnswer($this->inputPromptTemplate, 1, $timeout, function($ansewr, $m){ $this->inputPrompt = $m[0]; });
             //--- Strip a garbage:
             if ($this->trimResponse) {
                 $responseData = $this->trimResponse($responseData);
             }
-            
+
         } catch (Exception $e) {
-            
+
             if ($e->getCode() == self::ERR_TIMEOUT) {
                 $code = self::ERR_TIMEOUT_EXEC;
             } else {
@@ -489,58 +496,58 @@ class Telnet extends RemoteExecutor {
             }
             $this->error($code, __FUNCTION__);
             $responseData = false;
-            
-        }    
-        
-    return $responseData;        
-    }     
-    
+
+        }
+
+    return $responseData;
+    }
+
     /**
      * Delete 'echo' & 'prompt' from response data
-     * 
+     *
      * @param  string $responseData Response data
      * @return string               Trimmed data
      */
     public function trimResponse($responseData) {
         return $this->trimFromPrompt( $this->trimFromEcho($responseData) );
     }
-    
+
     /**
      * Delete 'echo' of input commands from the begining of response data
-     * 
+     *
      * @param  string $responseData Response data
      * @return string               Trimmed data
      */
     public function trimFromEcho($responseData) {
             $strings = [$this->lastRequest, "\r", "\n"];
             foreach ($strings as $deleteSring) {
-                if ( ($p = strpos($responseData, $deleteSring)) === 0 ) { 
+                if ( ($p = strpos($responseData, $deleteSring)) === 0 ) {
                     $responseData = substr($responseData, strlen($deleteSring));
                 }
             }
     return $responseData;
     }
-    
+
     /**
      * Delete a 'prompt' at the end of response data
-     * 
+     *
      * @param  string $responseData Response data
      * @return string               Trimmed data
      */
     public function trimFromPrompt($responseData) {
-            if ( ($p = strrpos($responseData, $this->inputPrompt)) !== false ) { 
+            if ( ($p = strrpos($responseData, $this->inputPrompt)) !== false ) {
                 $responseData = substr($responseData, 0, $p);
             }
     return $responseData;
     }
-    
+
     //--------------------------------------------------------------------------
     // Read & Write operations
     //--------------------------------------------------------------------------
-    
+
     /**
      * Sends a data through the socket
-     * 
+     *
      * @param  string    $data  Data to send
      * @return int|false        Count of bytes sent or FALSE on fail
      */
@@ -552,18 +559,18 @@ class Telnet extends RemoteExecutor {
         }
     return $bytesSent;
     }
-    
+
     /**
      * Reads the response data from the socket.
      * Parses response data and separates into commands and text data.
      * Sends telnet commands to remote side if it will found in response.
-     * 
+     *
      * @param  int  $timeout Maximum seconds to wait the response
-     * 
+     *
      * @return string|false  Text data of response or FALSE on fail.
-     * 
-     * @throws Exception 
-     *      1. If timeout; 
+     *
+     * @throws Exception
+     *      1. If timeout;
      *      2. If socket is closed by the remote side
      *      3. If socket error
      */
@@ -572,7 +579,7 @@ class Telnet extends RemoteExecutor {
         $size     = 8192;
         $timer    = 0;
         $timerMax = 100 * ($timeout ? $timeout : 1); // 1 sec by default
-        
+
         $bytes = false;
         while($bytes === false) {
             $b       = "";
@@ -595,23 +602,23 @@ class Telnet extends RemoteExecutor {
                 }
             }
         }
-        
+
         list($commands, $text) = $this->parseInput($buffer);
-        
+
         $this->debug([1, $bytes, $commands, $text], __FUNCTION__);
-        
+
         if ($bytes === false) {
             $this->error(self::ERR_SOCKET, __FUNCTION__, socket_last_error());
             throw new Exception(socket_last_error(), self::ERR_SOCKET);
         }
-        
+
         //--- Response to input commands:
         if ( $responseComm=$this->getCommResponse($commands) ) {
             $this->send($responseComm);
         }
         //------------------------------
-        
-    return $text;    
+
+    return $text;
     }
 
     /**
@@ -625,13 +632,13 @@ class Telnet extends RemoteExecutor {
         $answer = false;
         $finish = false;
         try {
-            
+
                 do {
                     //--- Read from socket:
                     $this->inputBuffer .= $this->read($timeout);
                     if ($analyzeMode) { //--- Fast analyze: (only the last string)
                         $analyze = array_pop(explode("\n", $this->inputBuffer));
-                    } else {            //--- Tolal analyze: (all the answer) 
+                    } else {            //--- Tolal analyze: (all the answer)
                         $analyze = $this->inputBuffer;
                     }
                     //--- Parse received data:
@@ -648,21 +655,21 @@ class Telnet extends RemoteExecutor {
                 } while (!$finish);
                 //--- Copy received data:
                 $answer = $this->inputBuffer;
-                
+
             } catch (Exception $e) {
-                
+
                 if (is_callable($failFunction)) {
                     $this->debug($e->getMessage(), __FUNCTION__);
                      //--- Execute function on fail
-                    $failFunction($e); 
+                    $failFunction($e);
                 } else {
                     $this->error($e->getCode(), __FUNCTION__); // if isError
                 }
-                
+
             }
-    return $answer;        
+    return $answer;
     }
-    
+
     //--------------------------------------------------------------------------
     // Parse terminal commands & options
     //--------------------------------------------------------------------------
@@ -671,62 +678,62 @@ class Telnet extends RemoteExecutor {
      * Parses data and separate into TELNET-commands and text
      */
     protected function parseInput($string) {
-        
-        $text     = ''; 
+
+        $text     = '';
         $commands = null;
         $len      = strlen($string);
-        
+
         for ($i=0; $i<$len; $i++) {
             if (ord($string[$i]) == 0xff) { // Commands block: IAC (255)
-                
+
                 $cmd = ord($string[++$i]);  // Telnet command
                 if ($cmd == 0xfb | // WILL (251)
                     $cmd == 0xfc | // WONT (252)
                     $cmd == 0xfd | // DO   (253)
                     $cmd == 0xfe   // DONT (254)
                    ) {
-                    
+
                         $r = [ $cmd => ord($string[++$i]) ];
-                        
+
                 } else if ( $cmd == 0xfa ) { // SB (250)
-                    
+
                     $opt    = ord($string[++$i]);
                     $params = "";
                     while($i<$len) {
                         $i++;
                         if (ord($string[$i]) == 0xff && ord($string[$i+1]) == 0xf0) { // IAC SE (240)
                             $i++;
-                            break; 
+                            break;
                         }
                         $params [] = ord($string[$i]); //if (ord($string[$i]) >= 32 && ord($string[$i])<=126) { $params .= $string[$i]; }
-                        
+
                     }
                     $r = [ $cmd => [ $opt => implode(' ', $params) ]];
-                    
+
                 } else {
-                    
+
                     $r = $cmd;
-                    
+
                 }
-                
+
                 $commands[] = $r;
-                
+
             } else { // Text block:
                 $text .= $string[$i];
             }
         }
-        
-    return [ $commands, $text ];    
+
+    return [ $commands, $text ];
     }
-    
+
     /**
      * Create a string with TELNET commands for response to remote side
      */
     protected function getCommResponse($commBuffer) {
         if (!$commBuffer) return null;
-        
+
         $IAC = chr(0xff);
-        
+
         foreach ($commBuffer as $command) {
             if (!is_array($command)) continue;
             foreach ($command as $cmd => $opt) {
@@ -734,12 +741,12 @@ class Telnet extends RemoteExecutor {
                 switch ($cmd) {
                     case 0xfb: // WILL (251)
                         $rpcmd = chr(0xfd); // DO
-                        $rncmd = chr(0xfe); // DONT 
+                        $rncmd = chr(0xfe); // DONT
                         $apply = true;
                         break;
-                    case 0xfd: // DO   (253) 
+                    case 0xfd: // DO   (253)
                         $rpcmd = chr(0xfb); // WILL
-                        $rncmd = chr(0xfc); // WONT 
+                        $rncmd = chr(0xfc); // WONT
                         $apply = true;
                         braek;
                     default:
@@ -762,7 +769,7 @@ class Telnet extends RemoteExecutor {
                         case 0x1f: // WINDOW-SIZE (31)
                                 $rcmd   =        chr(0xfb) . chr($opt)
                                         . $IAC . chr(0xfa) . chr($opt)
-                                        . chr($this->terminalWidth  >> 8) . chr($this->terminalWidth  & 0x00ff) 
+                                        . chr($this->terminalWidth  >> 8) . chr($this->terminalWidth  & 0x00ff)
                                         . chr($this->terminatHeight >> 8) . chr($this->terminatHeight & 0x00ff)
                                         . $IAC . chr(0xf0) . chr($opt);
                             break;
@@ -773,7 +780,7 @@ class Telnet extends RemoteExecutor {
         }
     return $out;
     }
-    
+
     /**
      * Converts mixed data to string
      */
@@ -798,14 +805,14 @@ class Telnet extends RemoteExecutor {
                     $out = implode(", ", $out);
                 }
                 break;
-            default: 
+            default:
                 $out = print_r($input, true);
         }
-    return $out;    
+    return $out;
     }
-    
+
     /**
-     * @var_ array TELNET commands 
+     * @var_ array TELNET commands
      */
     protected $tmCmd = array (
         "SE"   => 0xf0, // (240)
@@ -819,7 +826,7 @@ class Telnet extends RemoteExecutor {
     protected $tmCmdCodes = null;
 
     /**
-     * @var_ array TELNET options 
+     * @var_ array TELNET options
      */
     protected $tmOption = array ( // http://www.iana.org/assignments/telnet-options/telnet-options.xhtml
         "ECHO"   => 0x1,  // (1)  ECHO              http://tools.ietf.org/html/rfc857
@@ -828,23 +835,23 @@ class Telnet extends RemoteExecutor {
         "WSIZE"  => 0x1f, // (31) WINDOW-SIZE       http://tools.ietf.org/html/rfc1073
     );
     protected $tmOptionCodes = null;
-   
+
     /**
      * TELNET command code to command name
      */
     protected function getTerminalCommandName($code) {
         if (!is_array($this->tmCmdCodes))   $this->tmCmdCodes = array_flip($this->tmCmd);
         if (array_key_exists($code, $this->tmCmdCodes)) $code = $this->tmCmdCodes[$code];
-    return $code;    
+    return $code;
     }
-    
+
     /**
      * TELNET option code to option name
      */
     protected function getTerminalOptionName($code) {
         if (!is_array($this->tmOptionCodes))   $this->tmOptionCodes = array_flip($this->tmOption);
         if (array_key_exists($code, $this->tmOptionCodes)) $code = $this->tmOptionCodes[$code];
-    return $code;    
+    return $code;
     }
-    
+
 }
