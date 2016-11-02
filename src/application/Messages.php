@@ -9,7 +9,7 @@ namespace digger\cradle\application;
 
 /**
  * @brief Multi language messages
- * 
+ *
  * Class to support of multi language messages.
  * Wrap of GNU "gettext" utility and its simplest replacement (just in case).
  *
@@ -19,12 +19,12 @@ namespace digger\cradle\application;
  */
 class Messages {
 
-    /** 
-     * Array of text domains for translations 
-     * 
+    /**
+     * Array of text domains for translations
+     *
      * Structure:
      * ~~~
-     * 
+     *
      * self::$textDomains = [
      *   'text_domain1' => [
      *       'root'    => '/path/to/some_folder1',
@@ -36,60 +36,60 @@ class Messages {
      *   ],
      *   ...
      * ]
-     * 
+     *
      * ~~~
      */
     public static $textDomains = null;
 
     /** Current language */
     public static $language = "";
-    
+
     //--------------------------------------------------------------------------
     // Private
     //--------------------------------------------------------------------------
-    
+
     /** Current text domain */
-    private static $textDomain = "";   
-    
-//==============================================================================    
+    private static $textDomain = "";
+
+//==============================================================================
 // Methods
-//==============================================================================    
-    
+//==============================================================================
+
     /**
      * To set params of current text domain for translations.
-     * 
+     *
      * (wrap of `gettext`)
-     * 
+     *
      * @param string $domain    The name of the text domain
      * @param string $rootDir   Root directory to find translations
      * ~~~
-     * 
+     *
      * The root directory structure:
-     * 
+     *
      * (`gettext` native)
-     * 
+     *
      *   /$rootDir
      *         $language/LC_MESSAGES/domainName.mo
-     * 
+     *
      *  For example:
-     * 
-     *  messages/ 
+     *
+     *  messages/
      *         en/LC_MESSAGES/domainName.mo
      *         ru/LC_MESSAGES/domainName.mo
      *         ...
-     * 
+     *
      * (`gettext` replacment by self::_ )
-     * 
+     *
      *   /$rootDir
      *         $language/domainName.php
-     * 
+     *
      *  For example:
-     * 
+     *
      *  messages/
      *         en/domainName.php
      *         ru/domainName.php
      *         ...
-     * 
+     *
      * ~~~
      * @param string $codeset UTF-8 by default.
      */
@@ -104,18 +104,18 @@ class Messages {
         //--- Set codeset:
         bind_textdomain_codeset($domain, $codeset ? $codeset : 'UTF-8');
         //--- Use text domain:
-        textdomain ($domain);      
+        textdomain ($domain);
         //--- Store current text domain:
         self::$textDomain = $domain;
     }
-    
+
     /**
      * Change current text domain for translation.
-     * 
+     *
      * (wrap of `gettext`)
-     * 
+     *
      * Property `self::$textDomains` mast be defined before @see $textDomains
-     * 
+     *
      * @param string $domain The name of the current text domain
      */
     public static function useTextDomain($domain) {
@@ -124,50 +124,50 @@ class Messages {
             self::setTextDomain($domain, $root, $codeset);
         }
     }
-    
+
     /**
      * GNU `gettext` utility simplest replacement.
-     * 
-     * If you can't use the `gettext` for any reason, the simplest way to replace it 
+     *
+     * If you can't use the `gettext` for any reason, the simplest way to replace it
      * is to use this method.
-     * 
+     *
      * But in this case you should keep your translation messages in php file (for directory structure see: `setTextDomain`).
      * The php file mast returns an array of structure:
-     * 
+     *
      * ~~~
-     * 
+     *
      * return [
      *  'message_id' => 'message text',
      *  ...
      * ]
-     * 
+     *
      * ~~~
-     * 
+     *
      * @param  string  $text text message
      * @return <i>string</i> text message
      * @see setTextDomain
-     * 
+     *
      * <h3>Example:</h3>
-     * ~~~ 
-     * <?php 
-     * 
+     * ~~~
+     * <?php
+     *
      * echo Messages::_('Hello world!');
-     * 
+     *
      * ~~~
      */
-    public static function _($text){  
+    public static function _($text){
         if (!self::$textDomains[self::$textDomain]["data"]) {
             $file = self::$textDomains[self::$textDomain]["root"] . "/" . substr(self::$language, 0, 2) . "/". self::$textDomain . ".php";
             if (is_file($file)) {
-                self::$textDomains[self::$textDomain]["data"] = include($file); 
+                self::$textDomains[self::$textDomain]["data"] = include($file);
             }
             //--- To include only once:
-            self::$textDomains[self::$textDomain]["data"][""] = "";        
+            self::$textDomains[self::$textDomain]["data"][""] = "";
         }
-        if (isset(self::$textDomains[self::$textDomain]["data"][$text])) { 
+        if (isset(self::$textDomains[self::$textDomain]["data"][$text])) {
             return self::$textDomains[self::$textDomain]["data"][$text];
         }
     return $text;
-    }    
-    
+    }
+
 }

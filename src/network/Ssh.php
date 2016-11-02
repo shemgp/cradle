@@ -11,30 +11,30 @@ use digger\cradle\network\RemoteExecutor;
 
 /**
  * @brief SSH interaction
- * 
+ *
  * A simple class to send commands to remote host through the SSH protocol.
  *
  * @version 4.0
  * @author Digger <mrdigger@sad-systems.ru>
  * @copyright (c) 2016, SAD-Systems
- * 
+ *
  * <h3>Example of usage:</h3>
  * ~~~
  * <?php
  *
  * require_once __DIR__ . '/../../../../autoload.php';
- * 
+ *
  * use digger\cradle\network\Ssh;
- * 
+ *
  *   //--- 1. Short usage:
  *
  *   $r = (new Ssh([ 'host' => "host", 'user' => "user", 'password' => "password" ]))->exec("hostname");
  *   print_r( $r );
- *    
+ *
  *   //--- 2. Normal usage:
  *
  *   $t = new Ssh([
- *       'host'     => "host", 
+ *       'host'     => "host",
  *       'user'     => "username",
  *       'password' => "password",
  *       'debug'    => "debug.dat", // to file (option)
@@ -55,7 +55,7 @@ use digger\cradle\network\RemoteExecutor;
  *   //--- 3. Advanced usage:
  *
  *   $t = new Ssh([
- *       'host'     => "host", 
+ *       'host'     => "host",
  *       'user'     => "username",
  *       'password' => "password",
  *       'debug'    => 2,          // to STDIN (echo)
@@ -68,7 +68,7 @@ use digger\cradle\network\RemoteExecutor;
  *   try {
  *       foreach ($commands as $command) {
  *           echo "command : $command\n";
- *           $r = $t->exec($command); 
+ *           $r = $t->exec($command);
  *           print_r($r);
  *       }
  *   } catch (Exception $e) {
@@ -78,7 +78,7 @@ use digger\cradle\network\RemoteExecutor;
  *   }
  *
  *   $t->close();
- * 
+ *
  *   //--- 4. Several targets:
  *
  *   $config   = ['user' => "user", 'password' => "password", 'errorSilent' => false, 'debug' => 2];
@@ -91,7 +91,7 @@ use digger\cradle\network\RemoteExecutor;
  *       try {
  *           echo "Host: $host\n";
  *           $t->open($host);
- *           $r = $t->exec($commands); 
+ *           $r = $t->exec($commands);
  *           print_r($r);
  *       } catch (Exception $e) {
  *           echo "Exception: " . $e->getMessage() . " Code: " . $e->getCode() . "\n";
@@ -99,9 +99,9 @@ use digger\cradle\network\RemoteExecutor;
  *           print_r($t->getErrors());
  *       }
  *   }
- *   
+ *
  *   $t->close();
- * 
+ *
  * ~~~
  */
 class Ssh extends RemoteExecutor {
@@ -110,12 +110,12 @@ class Ssh extends RemoteExecutor {
     // Error codes
     //---------------------------------
 
-    const ERR_STREAM_CREATE = 5;    
-    
+    const ERR_STREAM_CREATE = 5;
+
     //---------------------------------
     // Execute types
     //---------------------------------
-    
+
     /**
      * Execute a command on a remote server
      */
@@ -124,88 +124,88 @@ class Ssh extends RemoteExecutor {
      * Request an interactive shell
      */
     const EXECTYPE_SHELL = 2;
-    
+
     //--------------------------------------------------------------------------
     // Properties
     //--------------------------------------------------------------------------
-    
+
   //public $host;        <-- is inherited
     /**
      * @var_ <i>int</i> The target TCP port.
      */
     public $port = 22; //<-- is overridden
-  //public $user;        <-- is inherited 
-  //public $password;    <-- is inherited    
+  //public $user;        <-- is inherited
+  //public $password;    <-- is inherited
   //public $timeout;     <-- is inherited
-  
+
     /**
      * @var_ <i>int</i> The type of remote interaction.
      *                  Acceptable values: self::EXECTYPE_EXEC | self::EXECTYPE_SHELL
      * @see EXECTYPE_EXEC
      * @see EXECTYPE_SHELL
-     */    
+     */
     public $execType        = self::EXECTYPE_EXEC;
     /**
-     * @var_ <i>string</i> Type of virtual terminal (option). 
-     */    
+     * @var_ <i>string</i> Type of virtual terminal (option).
+     */
     public $terminalType    = 'vt102';
     /**
-     * @var_ <i>int</i> Width of the virtual terminal. 
-     */    
+     * @var_ <i>int</i> Width of the virtual terminal.
+     */
     public $width           = 80;
     /**
-     * @var_ <i>int</i> Height of the virtual terminal. 
-     */    
+     * @var_ <i>int</i> Height of the virtual terminal.
+     */
     public $height          = 25;
     /**
-     * @var_ <i>int</i> should be one of SSH2_TERM_UNIT_CHARS or SSH2_TERM_UNIT_PIXELS 
-     */    
+     * @var_ <i>int</i> should be one of SSH2_TERM_UNIT_CHARS or SSH2_TERM_UNIT_PIXELS
+     */
     public $widthHeightType = SSH2_TERM_UNIT_CHARS;
     /**
-     * @var_ <i>string</i> An associative array of name/value pairs to set in the target environment (option). 
-     */    
+     * @var_ <i>string</i> An associative array of name/value pairs to set in the target environment (option).
+     */
     public $environment;
-    
+
     //--------------------------------------------------------------------------
     // Public functions
     //--------------------------------------------------------------------------
 
     //... All methods are inherited from parent class ...
-  
+
     //==========================================================================
     // Private
     //==========================================================================
-  
+
     /**
      * Create an error
-     * 
+     *
      * @throws Exception
      */
     protected function error($code, $source = "", $detail = null) {
         //--- Get a message:
         switch ($code) {
-            case self::ERR_STREAM_CREATE:          
+            case self::ERR_STREAM_CREATE:
                 $message = "Unable to create a stream";
                 break;
             default:
         }
         return parent::error($code, $source, $message, $detail);
     }
-    
+
     /**
-     * Connect to remote host 
+     * Connect to remote host
      * @warn Method to override
-     * 
+     *
      * @return <b>boolean</b>  TRUE  - Successfuly connected. <br>
      *                         FALSE - Connection is fail.
      */
     protected function connect() {
         return @ssh2_connect($this->host, $this->port);
-    }    
-    
+    }
+
     /**
      * Authenticate the access to remote side
-     * 
+     *
      * @return boolean  TRUE  - Authentication is success. <br>
      *                  FALSE - Authentication is fail.
      */
@@ -214,10 +214,10 @@ class Ssh extends RemoteExecutor {
         if ($this->isAuthenticated) {
             return true;
         }
-        
+
         //--- Authenticate:
         $this->debug("start", __FUNCTION__);
-        
+
         if(!@ssh2_auth_password($this->connection, $this->user, $this->password)) {
             $this->close();
             $this->error(self::ERR_AUTH_FAIL, __FUNCTION__);
@@ -225,46 +225,46 @@ class Ssh extends RemoteExecutor {
             $this->isAuthenticated = true;
             $this->debug("Success", __FUNCTION__);
         }
-        
-    return $this->isAuthenticated;    
+
+    return $this->isAuthenticated;
     }
-    
-    
+
+
     /**
-     * Prepare commands to execute 
-     * 
+     * Prepare commands to execute
+     *
      * @param  string       $command A string with commands separated by "\n"
      * @return <b>array</b>          An array of commands
      */
     protected function prepareCommand($command) {
         if ($this->execType === self::EXECTYPE_SHELL) {
             //--- Implode an array to single command:
-            if (is_array($command)) { 
-                $command = implode("\n", $command); 
-            } 
+            if (is_array($command)) {
+                $command = implode("\n", $command);
+            }
             $commands = [$command . "\n"];
         } else {
             //--- Explode a string to an array of commands:
-            if (!is_array($command)) { 
-                $commands = explode("\n", $command); 
+            if (!is_array($command)) {
+                $commands = explode("\n", $command);
             } else {
                 $commands = $command;
             }
         }
-    return $commands;    
+    return $commands;
     }
-    
+
     /**
      * Execute a single command on remote side
-     * 
+     *
      * @return string   The text data of response.
      */
     protected function executeCommand($command, $timeout = null) {
-        
+
         $command = $command . ""; //--- convert to string
-        
+
         $this->debug("Command: " . $command, __FUNCTION__);
-        
+
         switch ($this->execType) {
             case self::EXECTYPE_EXEC:
                 $this->debug("Exec type: EXEC ", __FUNCTION__);
@@ -277,16 +277,16 @@ class Ssh extends RemoteExecutor {
                 break;
             default:
         }
-        
+
         if (!$stream) {
-            
+
             $this->error(self::ERR_STREAM_CREATE, __FUNCTION__);
             $responseData = false;
-            
+
         } else {
-            
-            $this->debug("Stream created", __FUNCTION__);   
-            $responseData = "";     
+
+            $this->debug("Stream created", __FUNCTION__);
+            $responseData = "";
             stream_set_blocking($stream, true);
             if ($this->execType == self::EXECTYPE_SHELL) {
                 fwrite($stream, $command); //.PHP_EOL
@@ -294,15 +294,14 @@ class Ssh extends RemoteExecutor {
             }
             while( $o = fgets($stream) ) {
                 $responseData .= $o;
-                $this->debug("Response: " . $o, __FUNCTION__); 
+                $this->debug("Response: " . $o, __FUNCTION__);
             }
             fclose($stream);
-            $this->debug("Stream closed", __FUNCTION__); 
-            
+            $this->debug("Stream closed", __FUNCTION__);
+
         }
-        
-    return $responseData;        
+
+    return $responseData;
     }
-    
+
 }
-    

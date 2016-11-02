@@ -8,42 +8,42 @@
 namespace digger\cradle\common;
 
 /**
- * 
+ *
  * This class is designed to save log messages.
- *  
+ *
  * @version 1.0
  * @author Digger <mrdigger@sad-systems.ru>
  * @copyright (c) 2016, SAD-Systems
- * 
+ *
  * <h3>Example of usage:</h3>
  * ~~~
- * 
+ *
  * $logger = new Logger("file.log");
  * $logger->save("New message 1");
  * $logger->save("New message 2");
  * print_r($logger->getMessages());
- * 
+ *
  * ~~~
  */
 class Logger {
-    
+
     /**
      * Constructor
-     * 
-     * @param int|string $destination 
+     *
+     * @param int|string $destination
      * @see init
      */
     public function __construct($destination = null) {
         $this->init($destination);
     }
-    
+
     //--------------------------------------------------------------------------
     // Public methods
     //--------------------------------------------------------------------------
-    
+
     /**
      * Init the class
-     * 
+     *
      * @param int|string $destination Defines a log destination <br>
      * Possible values:                   <br>
      *      false    - no log;            <br>
@@ -57,20 +57,20 @@ class Logger {
         //--- Create & clear the log destination:
         if ($this->destination === 1) {
             $this->buffer = [];
-        } else 
-        if (is_string($this->destination)) { 
-            file_put_contents ($this->destination, ""); 
+        } else
+        if (is_string($this->destination)) {
+            file_put_contents ($this->destination, "");
         }
-    }     
-    
+    }
+
     /**
      * Save a message
-     * 
+     *
      * @param mixed $message The log message of any type.
      */
     public function save($message) {
         if (!$this->destination) { return; }
-        
+
         if ($this->destination === 1) {
             //--- Log to buffer:
             $this->buffer[] = $message;
@@ -101,7 +101,7 @@ class Logger {
             return $buffer;
         }
     }
-    
+
     /**
      * Returns data of the last message
      * @return <i>mixed</i> The message of any type.
@@ -113,24 +113,24 @@ class Logger {
         }
     return false;
     }
-    
+
     //==========================================================================
     // Protected
     //==========================================================================
-    
+
     /**
      * @var_ <i>mixed</i> Defines a log destination.  <br>
      * @see init
-     */    
+     */
     protected $destination;
-    
+
     /**
      * @var_ <i>array</i> The default buffer to save messages
      */
-    protected $buffer = [];    
+    protected $buffer = [];
 
     //==========================================================================
     // Private
     //==========================================================================
-    
+
 }
