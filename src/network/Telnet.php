@@ -338,7 +338,7 @@ class Telnet extends RemoteExecutor {
      *
      * @throws Exception
      */
-    protected function error($code, $source = "", $detail = null) {
+    protected function error($code, $source = "", $message = null, $detail = null) {
         //--- Get a message:
         switch ($code) {
             case self::ERR_SOCKET:
@@ -413,7 +413,8 @@ class Telnet extends RemoteExecutor {
 
             $authType = false;
             do {
-                if (!preg_match("/(login|user|password)/i", array_pop(explode("\n", $this->inputBuffer)), $m)) {
+                $input = explode("\n", $this->inputBuffer);
+                if (!preg_match("/(login|user|password)/i", array_pop($input), $m)) {
                         $this->inputBuffer .= $this->read($this->timeout);
                 } else {
                     $authType = strtolower($m[1]);
@@ -477,6 +478,9 @@ class Telnet extends RemoteExecutor {
 
         //--- Send the command:
         $this->send($this->lastRequest . $this->enterKey); //--- Add control enter
+
+        if (!$wait_for_response)
+            return $this->inputBuffer;
 
         try {
 
@@ -551,7 +555,7 @@ class Telnet extends RemoteExecutor {
      * @param  string    $data  Data to send
      * @return int|false        Count of bytes sent or FALSE on fail
      */
-    protected function send($data) {
+    public function send($data) {
         $bytesSent = socket_send($this->socket, $data, strlen($data), 0);
         $this->debug("bytes [$bytesSent], data [" . $data . "]", __FUNCTION__);
         if ($bytesSent === false) {
@@ -624,7 +628,7 @@ class Telnet extends RemoteExecutor {
     /**
      * Advanced `read` (`read` wrapper)
      */
-    protected function getAnswer($inputPromptTemplates, $analyzeMode = 0, $timeout = null, $callbackFunctions = null, $failFunction = null) {
+    public function getAnswer($inputPromptTemplates, $analyzeMode = 0, $timeout = null, $callbackFunctions = null, $failFunction = null) {
         if (!is_array($inputPromptTemplates)) $inputPromptTemplates = [$inputPromptTemplates];
         if (!is_array($callbackFunctions)) $callbackFunctions = [$callbackFunctions];
         if (!$timeout)                     $timeout           = $this->timeout;
@@ -637,7 +641,8 @@ class Telnet extends RemoteExecutor {
                     //--- Read from socket:
                     $this->inputBuffer .= $this->read($timeout);
                     if ($analyzeMode) { //--- Fast analyze: (only the last string)
-                        $analyze = array_pop(explode("\n", $this->inputBuffer));
+                        $input = explode("\n", $this->inputBuffer);
+                        $analyze = array_pop($input);
                     } else {            //--- Tolal analyze: (all the answer)
                         $analyze = $this->inputBuffer;
                     }
@@ -734,6 +739,7 @@ class Telnet extends RemoteExecutor {
 
         $IAC = chr(0xff);
 
+        $out = null;
         foreach ($commBuffer as $command) {
             if (!is_array($command)) continue;
             foreach ($command as $cmd => $opt) {
@@ -748,7 +754,7 @@ class Telnet extends RemoteExecutor {
                         $rpcmd = chr(0xfb); // WILL
                         $rncmd = chr(0xfc); // WONT
                         $apply = true;
-                        braek;
+                        break;
                     default:
                 }
                 if ($apply) {
@@ -785,6 +791,7 @@ class Telnet extends RemoteExecutor {
      * Converts mixed data to string
      */
     protected function toString($input, $mode = null) {
+        $out = null;
         switch ($mode) {
             case "comm": // terminal commands array:
                 if (is_array($input)) {
